@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+
+.input {
+  @apply w-full border border-zinc-200 rounded-full px-5 py-4 outline-none focus:border-primary transition;
+}
+@theme {
+  --color-primary: #204A25;
+  --color-accent: #FFBB35;
+  --color-primary-bg: #FFFFFF;
+  --color-secondary: #F6F6F6;
+  
+}
