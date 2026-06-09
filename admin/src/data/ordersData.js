@@ -1,6 +1,6 @@
 const ordersData = [
   {
-    id: "#ORD1001",
+    id: "ORD1001",
 
     customer: {
       name: "Tejas Salunkhe",
@@ -34,7 +34,7 @@ const ordersData = [
   },
 
   {
-    id: "#ORD1002",
+    id: "ORD1002",
 
     customer: {
       name: "Aniket Salunkhe",
@@ -68,7 +68,7 @@ const ordersData = [
   },
 
   {
-    id: "#ORD1003",
+    id: "ORD1003",
 
     customer: {
       name: "Shubham Chavan",
@@ -102,7 +102,7 @@ const ordersData = [
   },
 
   {
-    id: "#ORD1004",
+    id: "ORD1004",
 
     customer: {
       name: "Sumit Patil",
@@ -136,7 +136,7 @@ const ordersData = [
   },
 
   {
-    id: "#ORD1005",
+    id: "ORD1005",
 
     customer: {
       name: "Rahul Patil",
