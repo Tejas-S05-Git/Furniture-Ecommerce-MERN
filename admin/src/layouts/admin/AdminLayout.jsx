@@ -7,13 +7,19 @@ const AdminLayout = () => {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-secondary">
+    <div className="flex h-screen bg-secondary">
       <AdminSidebar open={open} />
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <AdminHeader setOpen={setOpen} />
 
-        <main className="p-6">
+        <main
+          className="
+          flex-1
+          overflow-y-auto
+          p-6
+          "
+        >
           <Outlet />
         </main>
       </div>
@@ -28,4 +34,4 @@ const AdminLayout = () => {
   );
 };
 
-export default AdminLayout;
+export default AdminLayout; 

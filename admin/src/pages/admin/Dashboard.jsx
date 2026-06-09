@@ -8,13 +8,10 @@ import RecentOrdersTable from "../../components/dashboard/RecentOrdersTable";
 import TopProductsTable from "../../components/dashboard/TopProductsTable";
 import LowStockTable from "../../components/dashboard/LowStockTable";
 
-import {
-  statsData,
-} from "../../data/dashboardData";
+import {statsData,} from "../../data/dashboardData";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import QuickActions from "../../components/dashboard/QuickActions";
 import TodaysSummary from "../../components/dashboard/TodaysSummary";
-import RecentActivity from "../../components/dashboard/RecentActivity";
 
 const Dashboard = () => {
   return (
@@ -81,7 +78,7 @@ const Dashboard = () => {
 
       <TodaysSummary />
 
-      <RecentActivity />
+     
     </motion.div>
   );
 };
