@@ -17,6 +17,9 @@ import Customers from "../pages/admin/customers/Customers";
 import ViewCustomer from "../pages/admin/customers/ViewCustomer";
 import Reviews from "../pages/admin/reviews/Reviews";
 import ViewReview from "../pages/admin/reviews/ViewReview";
+import Coupons from "../pages/admin/coupons/Coupons";
+import AddCoupon from "../pages/admin/coupons/AddCoupon";
+import EditCoupon from "../pages/admin/coupons/EditCoupon";
 
 const AdminRoutes = () => {
   return (
@@ -39,6 +42,9 @@ const AdminRoutes = () => {
         <Route path="customers/view/:id" element={<ViewCustomer />} />
         <Route path="reviews" element={<Reviews />} />
         <Route path="reviews/view/:id" element={<ViewReview />} />
+        <Route path="coupons" element={<Coupons />} />
+        <Route path="coupons/add" element={<AddCoupon />} />
+        <Route path="coupons/edit/:id" element={<EditCoupon />} />
 
 
 

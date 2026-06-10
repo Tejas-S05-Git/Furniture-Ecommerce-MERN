@@ -2,7 +2,7 @@ import {
   LayoutDashboard,
   Package,
   FolderTree,
-  Boxes,
+  
   ShoppingCart,
   TicketPercent,
   Users,
@@ -37,11 +37,7 @@ export const adminSidebarData = [
         icon: FolderTree,
         path: "/admin/categories",
       },
-      {
-        name: "Inventory",
-        icon: Boxes,
-        path: "/admin/inventory",
-      },
+     
     ],
   },
 
