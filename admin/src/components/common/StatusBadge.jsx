@@ -31,6 +31,11 @@ const StatusBadge = ({ status }) => {
 
     Inactive:
       "bg-red-100 text-red-700",
+    Pending:
+      "bg-yellow-100 text-yellow-700",
+
+    Rejected:
+      "bg-red-100 text-red-700",
   };
 
   return (

@@ -15,6 +15,8 @@ import Orders from "../pages/admin/orders/Orders";
 import ViewOrder from "../pages/admin/orders/ViewOrder";
 import Customers from "../pages/admin/customers/Customers";
 import ViewCustomer from "../pages/admin/customers/ViewCustomer";
+import Reviews from "../pages/admin/reviews/Reviews";
+import ViewReview from "../pages/admin/reviews/ViewReview";
 
 const AdminRoutes = () => {
   return (
@@ -35,6 +37,10 @@ const AdminRoutes = () => {
         <Route path="orders/view/:id" element={<ViewOrder />} />
         <Route path="customers" element={<Customers />} />
         <Route path="customers/view/:id" element={<ViewCustomer />} />
+        <Route path="reviews" element={<Reviews />} />
+        <Route path="reviews/view/:id" element={<ViewReview />} />
+
+
 
         
 
