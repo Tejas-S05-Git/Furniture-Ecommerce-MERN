@@ -27,6 +27,7 @@ import CategoryBanners from "../pages/admin/banners/CategoryBanners";
 import AddCategoryBanner from "../pages/admin/banners/AddCategoryBanner";
 import EditCategoryBanner from "../pages/admin/banners/EditCategoryBanner";
 import Settings from "../pages/admin/settings/Settings";
+import Profile from "../pages/admin/profile/Profile";
 
 const AdminRoutes = () => {
   return (
@@ -59,6 +60,7 @@ const AdminRoutes = () => {
         <Route path="category-banners/add" element={<AddCategoryBanner />}/>
         <Route path="category-banners/edit/:id" element={<EditCategoryBanner />}/>
         <Route path="settings" element={<Settings />}/>
+        <Route path="profile" element={<Profile />}/>
 
 
 
