@@ -23,6 +23,14 @@ const StatusBadge = ({ status }) => {
 
     Returned:
       "bg-orange-100 text-orange-700",
+    VIP:
+      "bg-purple-100 text-purple-700",
+
+    Active:
+      "bg-green-100 text-green-700",
+
+    Inactive:
+      "bg-red-100 text-red-700",
   };
 
   return (
@@ -33,11 +41,10 @@ const StatusBadge = ({ status }) => {
         rounded-full
         text-sm
         font-medium
-        ${
-          statusStyles[
-            status
-          ] ||
-          "bg-zinc-100 text-zinc-700"
+        ${statusStyles[
+        status
+        ] ||
+        "bg-zinc-100 text-zinc-700"
         }
       `}
     >

@@ -13,6 +13,8 @@ import EditProduct from "../pages/admin/products/EditProduct";
 import ProductDetails from "../pages/admin/products/ProductDetails";
 import Orders from "../pages/admin/orders/Orders";
 import ViewOrder from "../pages/admin/orders/ViewOrder";
+import Customers from "../pages/admin/customers/Customers";
+import ViewCustomer from "../pages/admin/customers/ViewCustomer";
 
 const AdminRoutes = () => {
   return (
@@ -31,6 +33,9 @@ const AdminRoutes = () => {
         <Route path="products/view/:id" element={<ProductDetails />} />
         <Route path="orders" element={<Orders />} />
         <Route path="orders/view/:id" element={<ViewOrder />} />
+        <Route path="customers" element={<Customers />} />
+        <Route path="customers/view/:id" element={<ViewCustomer />} />
+
         
 
 
