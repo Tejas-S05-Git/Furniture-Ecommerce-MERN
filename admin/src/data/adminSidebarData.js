@@ -2,7 +2,6 @@ import {
   LayoutDashboard,
   Package,
   FolderTree,
-  
   ShoppingCart,
   TicketPercent,
   Users,
@@ -10,6 +9,7 @@ import {
   Image,
   Settings,
   LogOut,
+  LayoutGrid,
 } from "lucide-react";
 
 export const adminSidebarData = [
@@ -37,7 +37,6 @@ export const adminSidebarData = [
         icon: FolderTree,
         path: "/admin/categories",
       },
-     
     ],
   },
 
@@ -77,9 +76,14 @@ export const adminSidebarData = [
     title: "MARKETING",
     items: [
       {
-        name: "Banners",
+        name: "Hero Banners",
         icon: Image,
         path: "/admin/banners",
+      },
+      {
+        name: "Category Banners",
+        path: "/admin/category-banners",
+        icon: LayoutGrid,
       },
     ],
   },

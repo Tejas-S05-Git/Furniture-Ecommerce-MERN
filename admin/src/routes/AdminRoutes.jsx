@@ -20,6 +20,13 @@ import ViewReview from "../pages/admin/reviews/ViewReview";
 import Coupons from "../pages/admin/coupons/Coupons";
 import AddCoupon from "../pages/admin/coupons/AddCoupon";
 import EditCoupon from "../pages/admin/coupons/EditCoupon";
+import HeroBanners from "../pages/admin/banners/HeroBanners";
+import AddHeroBanner from "../pages/admin/banners/AddHeroBanner";
+import EditHeroBanner from "../pages/admin/banners/EditHeroBanner";
+import CategoryBanners from "../pages/admin/banners/CategoryBanners";
+import AddCategoryBanner from "../pages/admin/banners/AddCategoryBanner";
+import EditCategoryBanner from "../pages/admin/banners/EditCategoryBanner";
+import Settings from "../pages/admin/settings/Settings";
 
 const AdminRoutes = () => {
   return (
@@ -45,6 +52,15 @@ const AdminRoutes = () => {
         <Route path="coupons" element={<Coupons />} />
         <Route path="coupons/add" element={<AddCoupon />} />
         <Route path="coupons/edit/:id" element={<EditCoupon />} />
+        <Route path="banners" element={<HeroBanners />} />
+        <Route path="banners/add" element={<AddHeroBanner />} />
+        <Route path="banners/edit/:id" element={<EditHeroBanner />} />
+        <Route path="category-banners" element={<CategoryBanners />}/>
+        <Route path="category-banners/add" element={<AddCategoryBanner />}/>
+        <Route path="category-banners/edit/:id" element={<EditCategoryBanner />}/>
+        <Route path="settings" element={<Settings />}/>
+
+
 
 
 
