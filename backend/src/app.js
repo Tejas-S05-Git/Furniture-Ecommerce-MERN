@@ -6,8 +6,9 @@ const authRoutes = require("./routes/auth.routes");
 const categoryRoutes = require("./routes/category.routes");
 const productRoutes = require("./routes/product.routes");
 const customerRoutes = require("./routes/customer.routes");
-const orderRoutes =require("./routes/order.routes");
-const couponRoutes =require("./routes/coupon.routes");
+const orderRoutes = require("./routes/order.routes");
+const couponRoutes = require("./routes/coupon.routes");
+const reviewRoutes = require("./routes/review.routes");
 
 const app = express();
 
@@ -25,8 +26,9 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
-app.use("/api/customers",customerRoutes);
-app.use("/api/orders",orderRoutes);
-app.use("/api/coupons",couponRoutes);
+app.use("/api/customers", customerRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/coupons", couponRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 module.exports = app;
