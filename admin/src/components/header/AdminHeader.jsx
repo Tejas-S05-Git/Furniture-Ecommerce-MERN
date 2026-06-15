@@ -32,7 +32,7 @@ const AdminHeader = ({ setOpen }) => {
       "user"
     );
 
-    navigate("/login");
+    navigate("/admin/login");
   };
 
   return (
