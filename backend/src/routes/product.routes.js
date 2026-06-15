@@ -33,9 +33,14 @@ router.post(
   createProduct,
 );
 
-router.get("/", protect, authorize("admin", "super_admin"), getAllProducts);
-router.get("/:id", protect, authorize("admin", "super_admin"), getProductById);
-router.put("/:id",protect,authorize( "admin","super_admin"),updateProduct);
-router.delete("/:id",protect,authorize("admin","super_admin"),deleteProduct);
+router.get("/", getAllProducts);
+router.get("/:id", getProductById);
+router.put("/:id", protect, authorize("admin", "super_admin"), updateProduct);
+router.delete(
+  "/:id",
+  protect,
+  authorize("admin", "super_admin"),
+  deleteProduct,
+);
 
 module.exports = router;

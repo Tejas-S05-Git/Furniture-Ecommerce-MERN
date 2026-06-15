@@ -1,19 +1,41 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useState,
+} from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { products } from "../data/products";
+import api from "../services/api";
 import { useCart } from "../context/CartContext";
 import toast from "react-hot-toast";
-
 const ProductDetailsSection = () => {
   const { id } = useParams();
+  const [product, setProduct] = useState(null);
 
-  const product = products.find(
-    (item) => item.id === Number(id)
-  );
+  const [loading, setLoading] = useState(true);
 
-  const [selectedImage, setSelectedImage] = useState(
-    product?.images?.[0]
-  );
+  
+
+  const [selectedImage,setSelectedImage] =useState("");
+  const fetchProduct =
+  async () => {
+    try {
+      const response =
+        await api.get(
+          `/products/${id}`
+        );
+
+      setProduct(
+        response.data.product
+      );
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+  fetchProduct();
+}, [id]);
 
   useEffect(() => {
     if (product?.images?.length) {
@@ -21,6 +43,25 @@ const ProductDetailsSection = () => {
     }
   }, [product]);
 
+  useEffect(() => {
+  if (product) {
+    setSelectedImage(
+      product.thumbnail
+    );
+  }
+}, [product]);
+
+if (loading) {
+  return (
+    <div className="py-20 text-center">
+      Loading...
+    </div>
+  );
+}
+const allImages = [
+  product.thumbnail,
+  ...(product.images || []),
+];
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
   const navigate = useNavigate();
@@ -33,25 +74,43 @@ const ProductDetailsSection = () => {
     );
   }
 
-  const prevImage = () => {
-    const currentIndex = product.images.indexOf(selectedImage);
-    const prevIndex =
-      currentIndex === 0
-        ? product.images.length - 1
-        : currentIndex - 1;
+  const currentIndex =
+  allImages.indexOf(
+    selectedImage
+  );
 
-    setSelectedImage(product.images[prevIndex]);
-  };
+ const prevImage = () => {
+  const currentIndex =
+    allImages.indexOf(
+      selectedImage
+    );
+
+  const prevIndex =
+    currentIndex === 0
+      ? allImages.length - 1
+      : currentIndex - 1;
+
+  setSelectedImage(
+    allImages[prevIndex]
+  );
+};
 
   const nextImage = () => {
-    const currentIndex = product.images.indexOf(selectedImage);
-    const nextIndex =
-      currentIndex === product.images.length - 1
-        ? 0
-        : currentIndex + 1;
+  const currentIndex =
+    allImages.indexOf(
+      selectedImage
+    );
 
-    setSelectedImage(product.images[nextIndex]);
-  };
+  const nextIndex =
+    currentIndex ===
+    allImages.length - 1
+      ? 0
+      : currentIndex + 1;
+
+  setSelectedImage(
+    allImages[nextIndex]
+  );
+};
 
 
   return (
@@ -93,7 +152,7 @@ const ProductDetailsSection = () => {
 
             {/* Thumbnails */}
             <div className="flex gap-4 mt-5 flex-wrap">
-              {product.images.map((img, index) => (
+              {allImages.map((img, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(img)}
@@ -118,7 +177,7 @@ const ProductDetailsSection = () => {
             data-aos-duration="1000"
           >
             <p className="text-zinc-500 text-lg">
-              {product.category}
+              {product.category?.name}
             </p>
 
             <div className="flex flex-wrap items-center gap-4 mt-2">
@@ -172,7 +231,7 @@ const ProductDetailsSection = () => {
               </h4>
 
               <div className="flex gap-3">
-                {product.colors.map((clr, i) => (
+               {product.colors?.length > 0 &&((clr, i) => (
                   <button
                     key={i}
                     style={{ backgroundColor: clr }}
@@ -247,7 +306,7 @@ const ProductDetailsSection = () => {
                 <span className="font-semibold">
                   Tags :
                 </span>{" "}
-                {product.tags.join(", ")}
+               {product.tags?.join(", ")}
               </p>
 
               <div className="flex items-center gap-4 pt-2">

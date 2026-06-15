@@ -2,16 +2,36 @@ import { useState } from "react";
 
 import PageHeader from "../../../components/common/PageHeader";
 import Pagination from "../../../components/common/Pagination";
-
 import CategoryStats from "../../../components/categories/CategoryStats";
 import CategoryFilters from "../../../components/categories/CategoryFilters";
 import CategoryTable from "../../../components/categories/CategoryTable";
-
-import { categoriesData } from "../../../data/categoriesData";
 import { useNavigate } from "react-router-dom";
 import DeleteModal from "../../../components/common/DeleteModal";
 import EmptyState from "../../../components/common/EmptyState";
+import { useEffect } from "react";
+import api from "../../../services/api";
 const Categories = () => {
+
+  const [categories, setCategories] =useState([]);
+
+  useEffect(() => {
+  fetchCategories();
+}, []);
+
+const fetchCategories = async () => {
+  try {
+    const response =
+      await api.get("/categories");
+
+    console.log(response.data);
+
+    setCategories(
+      response.data.categories
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   const [search, setSearch] = useState("");
 const [status, setStatus] = useState("all");
@@ -23,7 +43,7 @@ const itemsPerPage = 5;
 const [selectedCategory, setSelectedCategory] = useState(null);
 const navigate = useNavigate();
   const filteredCategories =
-  categoriesData.filter((category) => {
+  categories.filter((category) => {
     const matchesSearch =
       category.name
         .toLowerCase()
@@ -52,6 +72,9 @@ const currentCategories =
       itemsPerPage
   );
 
+  useEffect(() => {
+  fetchCategories();
+}, []);
   return (
     <div className="space-y-8">
 
@@ -64,7 +87,7 @@ const currentCategories =
   }
 />
 
-      <CategoryStats  categories={categoriesData} />
+     <CategoryStats categories={categories} />
 
    <CategoryFilters
   search={search}

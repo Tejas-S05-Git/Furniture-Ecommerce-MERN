@@ -27,7 +27,9 @@ const CategoryDetailsCard = ({
 
         <div>
           Products :
-          <strong> {category.products}</strong>
+          <strong>
+            {category.productCount || 0}
+          </strong>
         </div>
 
         <div>

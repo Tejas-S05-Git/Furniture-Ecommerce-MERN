@@ -9,7 +9,7 @@ const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
   const navigate = useNavigate();
   return (
-    <Link to={`/product/${product.id}`}>
+   <Link to={`/product/${product._id}`}>
       <div
         className="group h-full flex flex-col"
         data-aos="fade-up"
@@ -21,7 +21,7 @@ const ProductCard = ({ product }) => {
 
           {/* Discount */}
           <div className="absolute top-5 left-5 bg-primary text-white px-4 py-2 rounded-full text-sm z-10">
-            {product.discount}% OFF
+            {product.discount || 0}% OFF
           </div>
 
           {/* Icons */}
@@ -55,7 +55,10 @@ const ProductCard = ({ product }) => {
 
           {/* Image */}
           <img
-            src={product.images?.[0]}
+            src={
+  product.thumbnail ||
+  product.images?.[0]
+}
             alt={product.title}
             loading="lazy"
             decoding="async"
@@ -66,11 +69,11 @@ const ProductCard = ({ product }) => {
         {/* Bottom */}
         <div className="mt-5">
           <div className="flex items-center justify-between">
-            <p className="text-zinc-500">{product.category}</p>
+            <p className="text-zinc-500">{product.category?.name}</p>
 
             <div className="flex items-center gap-2">
               <i className="ri-star-fill text-accent"></i>
-              <span className="font-semibold">{product.rating}</span>
+              <span className="font-semibold">{product.rating || 0}</span>
             </div>
           </div>
 

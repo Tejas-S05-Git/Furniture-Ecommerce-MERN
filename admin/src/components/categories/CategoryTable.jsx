@@ -29,7 +29,7 @@ const CategoryTable = ({
       data={categories}
       renderRow={(category) => (
         <tr
-          key={category.id}
+          key={category._id}
           className="border-b"
         >
           <td className="px-6 py-4">
@@ -50,7 +50,7 @@ const CategoryTable = ({
           </td>
 
           <td className="px-6 py-4">
-            {category.products}
+            {category.productCount || 0}
           </td>
 
           <td className="px-6 py-4">
@@ -60,18 +60,20 @@ const CategoryTable = ({
           </td>
 
           <td className="px-6 py-4">
-            {category.createdAt}
+            {new Date(
+              category.createdAt
+            ).toLocaleDateString()}
           </td>
 
           <td className="px-6 py-4">
             <div className="flex gap-3">
               <button>
                 <Eye
-                onClick={() =>
- navigate(
-   `/admin/categories/view/${category.id}`
- )
-}
+                  onClick={() =>
+                    navigate(
+                      `/admin/categories/view/${category._id}`
+                    )
+                  }
                   size={18}
                   className="text-primary"
                 />
@@ -79,21 +81,21 @@ const CategoryTable = ({
 
               <button>
                 <Pencil
-                onClick={() =>
- navigate(
-   `/admin/categories/edit/${category.id}`
- )
-}
+                  onClick={() =>
+                    navigate(
+                      `/admin/categories/edit/${category._id}`
+                    )
+                  }
                   size={18}
                   className="text-blue-500"
                 />
               </button>
 
               <button
-               onClick={() => {
-    setSelectedCategory(category);
-    setDeleteModal(true);
-  }}>
+                onClick={() => {
+                  setSelectedCategory(category);
+                  setDeleteModal(true);
+                }}>
 
                 <Trash2
                   size={18}

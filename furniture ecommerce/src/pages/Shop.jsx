@@ -1,12 +1,16 @@
 import React from 'react'
 import HeroPage from '../components/HeroPage'
 import ProductCard from "../components/ProductCard";
-import products from "../data/products";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import api from "../services/api";
 import FeaturesSection from "../components/FeaturesSection";
 
 const PRODUCTS_PER_PAGE = 12;
 const Shop = () => {
+  const [products, setProducts] =useState([]);
+  const [loading, setLoading] =useState(true);
+
+
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedMaterials, setSelectedMaterials] = useState([]);
@@ -15,6 +19,30 @@ const Shop = () => {
   const [priceRange, setPriceRange] = useState(500);
   const [sortBy, setSortBy] = useState("default");
   const [currentPage, setCurrentPage] = useState(1);
+
+
+  const fetchProducts =
+  async () => {
+    try {
+      const response =
+        await api.get(
+          "/products"
+        );
+
+      setProducts(
+        response.data.products
+      );
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+  fetchProducts();
+}, []);
+
 
   const handleFilterChange = (
     value,
@@ -89,6 +117,14 @@ const Shop = () => {
     (currentPage - 1) * PRODUCTS_PER_PAGE,
     currentPage * PRODUCTS_PER_PAGE
   );
+
+  if (loading) {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      Loading...
+    </div>
+  );
+}
   return (
     <>
       <HeroPage title="Shop" breadcrumbs={[{ label: "Home", path: "/" }, { label: "Shop" },]} />
@@ -300,7 +336,7 @@ const Shop = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-7">
                 {displayedProducts.map((product) => (
                   <ProductCard
-                    key={product.id}
+                    key={product._id}
                     product={product}
                   />
                 ))}
