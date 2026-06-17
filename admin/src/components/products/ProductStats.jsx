@@ -34,7 +34,9 @@ const ProductStats = ({
     {
       title: "Low Stock",
       value: products.filter(
-        (p) => p.quantity < 10
+        (p) =>
+          p.quantity > 0 &&
+          p.quantity < 10
       ).length,
       icon: AlertTriangle,
     },

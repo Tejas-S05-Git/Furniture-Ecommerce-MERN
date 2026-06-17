@@ -10,6 +10,7 @@ import DeleteModal from "../../../components/common/DeleteModal";
 import EmptyState from "../../../components/common/EmptyState";
 import { useEffect } from "react";
 import api from "../../../services/api";
+import toast from "react-hot-toast";
 const Categories = () => {
 
   const [categories, setCategories] =useState([]);
@@ -32,6 +33,37 @@ const fetchCategories = async () => {
     console.log(error);
   }
 };
+
+const handleDeleteCategory =
+  async () => {
+    try {
+      await api.delete(
+        `/categories/${selectedCategory._id}`
+      );
+
+      setCategories((prev) =>
+        prev.filter(
+          (item) =>
+            item._id !==
+            selectedCategory._id
+        )
+      );
+
+      toast.success(
+        "Category deleted successfully"
+      );
+
+      setDeleteModal(false);
+    } catch (error) {
+      console.log(error);
+
+      toast.error(
+        error.response?.data
+          ?.message ||
+          "Failed to delete category"
+      );
+    }
+  };
 
   const [search, setSearch] = useState("");
 const [status, setStatus] = useState("all");
@@ -112,10 +144,7 @@ const currentCategories =
 <DeleteModal
   open={deleteModal}
   onClose={() => setDeleteModal(false)}
-  onDelete={() => {
-    console.log("Delete:", selectedCategory);
-    setDeleteModal(false);
-  }}
+  onDelete={handleDeleteCategory}
   title="Delete Category"
 />
 

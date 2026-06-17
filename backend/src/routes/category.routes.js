@@ -12,7 +12,13 @@ router.post("/", protect, authorize( "admin", "super_admin"),upload.single("imag
 );
 router.get("/",protect,authorize("admin","super_admin"),getAllCategories);
 router.get("/:id",protect,authorize("admin","super_admin"),getCategoryById);
-router.put("/:id",protect,authorize("admin","super_admin"),updateCategory);
+router.put(
+  "/:id",
+  protect,
+  authorize("admin", "super_admin"),
+  upload.single("image"),
+  updateCategory
+);
 router.delete("/:id",protect,authorize("admin","super_admin"),deleteCategory);
 
 module.exports = router;

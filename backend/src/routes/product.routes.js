@@ -35,7 +35,27 @@ router.post(
 
 router.get("/", getAllProducts);
 router.get("/:id", getProductById);
-router.put("/:id", protect, authorize("admin", "super_admin"), updateProduct);
+router.put(
+  "/:id",
+  protect,
+  authorize(
+    "admin",
+    "super_admin"
+  ),
+  upload.fields([
+    {
+      name: "thumbnail",
+      maxCount: 1,
+    },
+    {
+      name: "images",
+      maxCount: 10,
+    },
+  ]),
+  updateProduct
+);
+
+
 router.delete(
   "/:id",
   protect,

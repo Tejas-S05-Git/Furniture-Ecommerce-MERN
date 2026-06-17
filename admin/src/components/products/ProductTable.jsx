@@ -29,7 +29,7 @@ const ProductTable = ({
       data={products}
       renderRow={(product) => (
         <tr
-          key={product.id}
+          key={product._id}
           className="
             border-b
             border-zinc-100
@@ -44,7 +44,7 @@ const ProductTable = ({
               alt={product.title}
               onClick={() =>
                 navigate(
-                  `/admin/products/view/${product.id}`
+                  `/admin/products/view/${product._id}`
                 )
               }
               className="
@@ -86,7 +86,7 @@ const ProductTable = ({
 
           {/* Category */}
           <td className="px-6 py-4">
-            {product.category}
+            {product.category?.name}
           </td>
 
           {/* Brand */}
@@ -135,7 +135,7 @@ const ProductTable = ({
 
           {/* Rating */}
           <td className="px-6 py-4">
-            ⭐ {product.rating}
+            ⭐ {product.rating || 0}
           </td>
 
           {/* Status */}
@@ -169,7 +169,7 @@ const ProductTable = ({
                 "
                 onClick={() =>
                   navigate(
-                    `/admin/products/view/${product.id}`
+                    `/admin/products/view/${product._id}`
                   )
                 }
               >
@@ -190,7 +190,7 @@ const ProductTable = ({
                 "
                 onClick={() =>
                   navigate(
-                    `/admin/products/edit/${product.id}`
+                    `/admin/products/edit/${product._id}`
                   )
                 }
               >

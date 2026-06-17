@@ -206,7 +206,34 @@ const updateCategory = async (
       seoDescription ||
       category.seoDescription;
 
-    await category.save();
+   
+
+    if (req.file) {
+  const result =
+    await new Promise(
+      (resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream(
+            {
+              folder:
+                "furniture/categories",
+            },
+            (error, result) => {
+              if (error)
+                reject(error);
+
+              resolve(result);
+            }
+          )
+          .end(req.file.buffer);
+      }
+    );
+
+  category.image =
+    result.secure_url;
+}
+
+ await category.save();
 
     res.status(200).json({
       success: true,

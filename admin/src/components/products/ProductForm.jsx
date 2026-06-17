@@ -1,5 +1,8 @@
-import { useState } from "react";
 import toast from "react-hot-toast";
+import { useEffect, useState, } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../../services/api";
+
 const defaultFormData = {
     title: "",
     category: "",
@@ -36,8 +39,11 @@ const defaultFormData = {
 
 
 };
+
 const ProductForm = ({ initialData = null,
     isEdit = false, }) => {
+    const navigate = useNavigate();
+    const [categories, setCategories] = useState([]);
     const [galleryFiles, setGalleryFiles] = useState([]);
     const [socialLinks, setSocialLinks] = useState({ facebook: "", pinterest: "", instagram: "", twitter: "" });
     const [thumbnailFile, setThumbnailFile] = useState(null);
@@ -47,6 +53,61 @@ const ProductForm = ({ initialData = null,
     const [tags, setTags] = useState(initialData?.tags?.join(", ") || "");
     const [colors, setColors] = useState(initialData?.colors || ["#6B2E1A",]);
     const [formData, setFormData] = useState(initialData || defaultFormData);
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const fetchCategories =
+        async () => {
+            try {
+                const response =
+                    await api.get(
+                        "/categories"
+                    );
+
+                setCategories(
+                    response.data.categories
+                );
+            } catch (error) {
+                console.log(error);
+            }
+        };
+  
+    
+
+    useEffect(() => {
+        if (initialData) {
+            setFormData({
+                ...initialData,
+
+                category:
+                    initialData.category?._id || "",
+            });
+
+            setFeatures(
+                initialData.features || [""]
+            );
+
+            setTags(
+                initialData.tags?.join(", ") || ""
+            );
+
+            setColors(
+                initialData.colors || ["#6B2E1A"]
+            );
+
+            setThumbnailPreview(
+                initialData.thumbnail
+            );
+
+            setGalleryPreview(
+                initialData.images || []
+            );
+        }
+    }, [initialData]);
+
+    
 
     const addFeature = () => {
         setFeatures([
@@ -111,111 +172,158 @@ const ProductForm = ({ initialData = null,
 
         setGalleryPreview(previews);
     };
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (!formData.title.trim()) {
-            toast.error(
-                "Product name is required"
-            );
+   const handleSubmit = async (e) => {
+  e.preventDefault();
 
-            return;
+  try {
+    const data = new FormData();
+
+    data.append("title", formData.title);
+    data.append("category", formData.category);
+    data.append("brand", formData.brand);
+    data.append("sku", formData.sku);
+
+    data.append(
+      "shortDescription",
+      formData.shortDescription
+    );
+
+    data.append(
+      "description",
+      formData.description
+    );
+
+    data.append("price", formData.price);
+    data.append("oldPrice", formData.oldPrice);
+
+    data.append(
+      "discount",
+      formData.discount
+    );
+
+    data.append(
+      "quantity",
+      formData.quantity
+    );
+
+    data.append("stock", formData.stock);
+
+    data.append("color", formData.color);
+
+    data.append(
+      "material",
+      formData.material
+    );
+
+    data.append(
+      "seoTitle",
+      formData.seoTitle
+    );
+
+    data.append(
+      "seoDescription",
+      formData.seoDescription
+    );
+
+    data.append(
+      "featured",
+      formData.featured
+    );
+
+    data.append(
+      "active",
+      formData.active
+    );
+
+    data.append(
+      "features",
+      JSON.stringify(features)
+    );
+
+    data.append(
+      "tags",
+      JSON.stringify(
+        tags
+          .split(",")
+          .map((tag) =>
+            tag.trim()
+          )
+      )
+    );
+
+    data.append(
+      "colors",
+      JSON.stringify(colors)
+    );
+
+    data.append(
+  "additionalInformation",
+  JSON.stringify(
+    formData.additionalInformation || {}
+  )
+);
+
+    if (thumbnailFile) {
+      data.append(
+        "thumbnail",
+        thumbnailFile
+      );
+    }
+
+    galleryFiles.forEach(
+      (image) => {
+        data.append(
+          "images",
+          image
+        );
+      }
+    );
+
+    let response;
+
+    if (isEdit) {
+      response = await api.put(
+        `/products/${initialData._id}`,
+        data,
+        {
+          headers: {
+            "Content-Type":
+              "multipart/form-data",
+          },
         }
-
-        if (!formData.category) {
-            toast.error(
-                "Category is required"
-            );
-
-            return;
+      );
+    } else {
+      response = await api.post(
+        "/products",
+        data,
+        {
+          headers: {
+            "Content-Type":
+              "multipart/form-data",
+          },
         }
+      );
+    }
 
-        if (!formData.brand.trim()) {
-            toast.error(
-                "Brand is required"
-            );
+    toast.success(
+      response.data.message
+    );
 
-            return;
-        }
+    navigate(
+      "/admin/products"
+    );
+  } catch (error) {
+    console.log(error);
 
-        if (!formData.price) {
-            toast.error(
-                "Price is required"
-            );
+    toast.error(
+      error.response?.data
+        ?.message ||
+        "Something went wrong"
+    );
+  }
+}; 
 
-            return;
-        }
-
-        if (
-            Number(formData.price) <= 0
-        ) {
-            toast.error(
-                "Price must be greater than 0"
-            );
-
-            return;
-        }
-
-        if (!formData.quantity) {
-            toast.error(
-                "Quantity is required"
-            );
-
-            return;
-        }
-
-        const productData = {
-            ...formData,
-
-            features,
-
-            colors,
-
-            tags: tags
-                .split(",")
-                .map((tag) =>
-                    tag.trim()
-                ),
-
-            socialLinks,
-            thumbnail: thumbnailFile,
-
-            images: galleryFiles,
-        };
-
-
-        if (isEdit) {
-            toast.success(
-                "Product updated successfully"
-            );
-
-            console.log(
-                "Updating Product",
-                productData
-            );
-        } else {
-            toast.success(
-                "Product added successfully"
-            );
-
-            console.log(
-                "Creating Product",
-                productData
-            );
-
-            setFormData(defaultFormData);
-
-            setFeatures([""]);
-
-            setTags("");
-
-            setColors(["#6B2E1A"]);
-
-            setThumbnailPreview(null);
-
-            setGalleryPreview([]);
-        }
-    };
-    const handleAdditionalInfo = (
+const handleAdditionalInfo = (
         e
     ) => {
         const { name, value } =
@@ -282,23 +390,20 @@ const ProductForm = ({ initialData = null,
                             name="category"
                             value={formData.category}
                             onChange={handleChange}
-                            className=" w-full border rounded-2xl px-4 py-3"
+                            className="w-full border rounded-2xl px-4 py-3"
                         >
                             <option value="">
                                 Select Category
                             </option>
 
-                            <option value="Bedroom">
-                                Bedroom
-                            </option>
-
-                            <option value="Living Room">
-                                Living Room
-                            </option>
-
-                            <option value="Dining Room">
-                                Dining Room
-                            </option>
+                            {categories.map((category) => (
+                                <option
+                                    key={category._id}
+                                    value={category._id}
+                                >
+                                    {category.name}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
@@ -779,8 +884,7 @@ const ProductForm = ({ initialData = null,
                         type="text"
                         name="material"
                         value={
-                            formData.additionalInformation
-                                .material
+                            formData.additionalInformation?.material || ""
                         }
                         onChange={
                             handleAdditionalInfo
@@ -798,8 +902,7 @@ const ProductForm = ({ initialData = null,
                         type="text"
                         name="weight"
                         value={
-                            formData.additionalInformation
-                                .weight
+                            formData.additionalInformation?.weight || ""
                         }
                         onChange={
                             handleAdditionalInfo
@@ -817,8 +920,7 @@ const ProductForm = ({ initialData = null,
                         type="text"
                         name="dimensions"
                         value={
-                            formData.additionalInformation
-                                .dimensions
+                            formData.additionalInformation?.dimensions || ""
                         }
                         onChange={
                             handleAdditionalInfo
@@ -836,8 +938,7 @@ const ProductForm = ({ initialData = null,
                         type="text"
                         name="warranty"
                         value={
-                            formData.additionalInformation
-                                .warranty
+                            formData.additionalInformation?.warranty || ""
                         }
                         onChange={
                             handleAdditionalInfo
@@ -854,8 +955,7 @@ const ProductForm = ({ initialData = null,
                         type="text"
                         name="shipping"
                         value={
-                            formData.additionalInformation
-                                .shipping
+                            formData.additionalInformation?.shipping || ""
                         }
                         onChange={
                             handleAdditionalInfo
@@ -873,8 +973,7 @@ const ProductForm = ({ initialData = null,
                         type="text"
                         name="returnPolicy"
                         value={
-                            formData.additionalInformation
-                                .returnPolicy
+                            formData.additionalInformation?.returnPolicy || ""
                         }
                         onChange={
                             handleAdditionalInfo

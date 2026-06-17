@@ -1,18 +1,65 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import api from "../../services/api";
 
-const CategoryForm = () => {
-  const [imagePreview, setImagePreview] = useState(null);
+const CategoryForm = ({ initialData, isEdit = false, }) => {
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(initialData?.image || null);
+  const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    name: "",
-    slug: "",
-    description: "",
-    parentCategory: "",
-    status: "active",
-    featured: false,
-    seoTitle: "",
-    seoDescription: "",
-  });
+  const [formData, setFormData] =
+    useState({
+      name:
+        initialData?.name || "",
+      slug:
+        initialData?.slug || "",
+      description:
+        initialData?.description ||
+        "",
+      parentCategory:
+        initialData?.parentCategory ||
+        "",
+      status:
+        initialData?.status ||
+        "active",
+      featured:
+        initialData?.featured ||
+        false,
+      seoTitle:
+        initialData?.seoTitle ||
+        "",
+      seoDescription:
+        initialData?.seoDescription ||
+        "",
+    });
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name:
+          initialData.name || "",
+        slug:
+          initialData.slug || "",
+        description:
+          initialData.description || "",
+        parentCategory:
+          initialData.parentCategory || "",
+        status:
+          initialData.status || "active",
+        featured:
+          initialData.featured || false,
+        seoTitle:
+          initialData.seoTitle || "",
+        seoDescription:
+          initialData.seoDescription || "",
+      });
+
+      setImagePreview(
+        initialData.image || null
+      );
+    }
+  }, [initialData]);
 
   const handleNameChange = (e) => {
     const value = e.target.value;
@@ -31,15 +78,112 @@ const CategoryForm = () => {
 
     if (!file) return;
 
+    setImageFile(file);
+
     setImagePreview(
       URL.createObjectURL(file)
     );
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log(formData);
+    try {
+      const data = new FormData();
+
+      data.append(
+        "name",
+        formData.name
+      );
+
+      data.append(
+        "slug",
+        formData.slug
+      );
+
+      data.append(
+        "description",
+        formData.description
+      );
+
+      data.append(
+        "parentCategory",
+        formData.parentCategory
+      );
+
+      data.append(
+        "status",
+        formData.status
+      );
+
+      data.append(
+        "featured",
+        formData.featured
+      );
+
+      data.append(
+        "seoTitle",
+        formData.seoTitle
+      );
+
+      data.append(
+        "seoDescription",
+        formData.seoDescription
+      );
+
+      if (imageFile) {
+        data.append(
+          "image",
+          imageFile
+        );
+      }
+
+      let response;
+
+      if (isEdit) {
+        response =
+          await api.put(
+            `/categories/${initialData._id}`,
+            data,
+            {
+              headers: {
+                "Content-Type":
+                  "multipart/form-data",
+              },
+            }
+          );
+      } else {
+        response =
+          await api.post(
+            "/categories",
+            data,
+            {
+              headers: {
+                "Content-Type":
+                  "multipart/form-data",
+              },
+            }
+          );
+      }
+
+      toast.success(
+        isEdit
+          ? "Category updated successfully"
+          : "Category created successfully"
+      );
+
+      navigate(
+        "/admin/categories"
+      );
+    } catch (error) {
+      console.log(error);
+
+      toast.error(
+        error.response?.data
+          ?.message ||
+        "Failed to create category"
+      );
+    }
   };
 
   return (
@@ -347,16 +491,20 @@ const CategoryForm = () => {
       <div className="flex justify-end gap-4 pt-4">
         <button
           type="button"
+          onClick={() =>
+            navigate(
+              "/admin/categories"
+            )
+          }
           className="
-          px-6
-          py-3
-          border
-          rounded-2xl
-        "
+    px-6
+    py-3
+    border
+    rounded-2xl
+  "
         >
           Cancel
         </button>
-
         <button
           type="submit"
           className="
@@ -367,7 +515,9 @@ const CategoryForm = () => {
           rounded-2xl
         "
         >
-          Save Category
+          {isEdit
+            ? "Update Category"
+            : "Save Category"}
         </button>
       </div>
     </form>

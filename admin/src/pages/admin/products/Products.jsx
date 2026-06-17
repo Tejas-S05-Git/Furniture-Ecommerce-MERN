@@ -1,6 +1,7 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { useEffect, useState } from "react";
+import api from "../../../services/api";
+import toast from "react-hot-toast";
 import PageHeader from "../../../components/common/PageHeader";
 import Pagination from "../../../components/common/Pagination";
 import DeleteModal from "../../../components/common/DeleteModal";
@@ -10,28 +11,45 @@ import ProductStats from "../../../components/products/ProductStats";
 import ProductFilters from "../../../components/products/ProductFilters";
 import ProductTable from "../../../components/products/ProductTable";
 
-import { productsData } from "../../../data/productsData";
-
 const Products = () => {
   const navigate = useNavigate();
 
-  const [products, setProducts] =useState(productsData);
+  const [products, setProducts] = useState([]);
 
+  const [search, setSearch] = useState("");
 
+  const [category, setCategory] = useState("all");
 
-const [search, setSearch] =useState("");
-
-  const [category, setCategory] =useState("all");
-
-  const [stock, setStock] =useState("all");
+  const [stock, setStock] = useState("all");
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [deleteModal, setDeleteModal] =useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
 
-  const [selectedProduct, setSelectedProduct] =useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const itemsPerPage = 5;
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const response =
+        await api.get("/products");
+
+      setProducts(
+        response.data.products
+      );
+    } catch (error) {
+      console.log(error);
+
+      toast.error(
+        "Failed to load products"
+      );
+    }
+  };
 
   const filteredProducts =
     products.filter((product) => {
@@ -43,14 +61,14 @@ const [search, setSearch] =useState("");
       const matchesCategory =
         category === "all"
           ? true
-          : product.category === category;
+          : product.category?.name === category;
 
       const matchesStock =
         stock === "all"
           ? true
           : stock === "instock"
-          ? product.stock
-          : !product.stock;
+            ? product.stock
+            : !product.stock;
 
       return (
         matchesSearch &&
@@ -60,21 +78,47 @@ const [search, setSearch] =useState("");
     });
 
   const totalPages = Math.ceil(
-  filteredProducts.length /
+    filteredProducts.length /
     itemsPerPage
-);
-
-const startIndex =
-  (currentPage - 1) *
-  itemsPerPage;
-
-const paginatedProducts =
-  filteredProducts.slice(
-    startIndex,
-    startIndex +
-      itemsPerPage
   );
 
+  const startIndex =
+    (currentPage - 1) *
+    itemsPerPage;
+
+  const paginatedProducts =
+    filteredProducts.slice(
+      startIndex,
+      startIndex +
+      itemsPerPage
+    );
+
+    const handleDeleteProduct = async () => {
+  try {
+    await api.delete(
+      `/products/${selectedProduct._id}`
+    );
+
+    setProducts(
+      products.filter(
+        (item) =>
+          item._id !==
+          selectedProduct._id
+      )
+    );
+
+    toast.success(
+      "Product deleted successfully"
+    );
+
+    setDeleteModal(false);
+  } catch (error) {
+    toast.error(
+      error.response?.data?.message ||
+        "Failed to delete product"
+    );
+  }
+};
   return (
     <div className="space-y-8">
 
@@ -90,7 +134,7 @@ const paginatedProducts =
       />
 
       <ProductStats
-        products={productsData}
+        products={products}
       />
 
       <ProductFilters
@@ -102,46 +146,35 @@ const paginatedProducts =
         setStock={setStock}
       />
 
-     {filteredProducts.length === 0 ? (
-  <EmptyState
-    title="No Products Found"
-    description="Try changing your filters."
-  />
-) : (
-  <ProductTable
-    products={paginatedProducts}
-    setDeleteModal={setDeleteModal}
-    setSelectedProduct={setSelectedProduct}
-  />
-)}
+      {filteredProducts.length === 0 ? (
+        <EmptyState
+          title="No Products Found"
+          description="Try changing your filters."
+        />
+      ) : (
+        <ProductTable
+          products={paginatedProducts}
+          setDeleteModal={setDeleteModal}
+          setSelectedProduct={setSelectedProduct}
+        />
+      )}
 
-      
-{filteredProducts.length > 0 && (
-  <Pagination
-    currentPage={currentPage}
-    totalPages={totalPages}
-    setCurrentPage={setCurrentPage}
-  />
-)}
 
-     <DeleteModal
+      {filteredProducts.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          setCurrentPage={setCurrentPage}
+        />
+      )}
+
+      <DeleteModal
   open={deleteModal}
   onClose={() =>
     setDeleteModal(false)
   }
   title="Delete Product"
-  onDelete={() => {
-    setProducts(
-      products.filter(
-        (item) =>
-          item.id !==
-          selectedProduct.id
-          
-      )
-    );
-
-    setDeleteModal(false);
-  }}
+  onDelete={handleDeleteProduct}
 />
 
     </div>

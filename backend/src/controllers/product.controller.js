@@ -12,10 +12,7 @@ const createProduct = async (
   try {
     const {
       title,
-      slug,
-
       category,
-
       brand,
       sku,
 
@@ -45,11 +42,21 @@ const createProduct = async (
       additionalInformation,
     } = req.body;
 
+    const generatedSlug = title
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^\w-]+/g, "");
+
     const existingProduct =
       await Product.findOne({
         $or: [
-          { slug },
-          { sku },
+          {
+            slug: generatedSlug,
+          },
+          {
+            sku,
+          },
         ],
       });
 
@@ -74,132 +81,183 @@ const createProduct = async (
       });
     }
 
+    const parsedFeatures =
+      features
+        ? JSON.parse(features)
+        : [];
+
+    const parsedTags = tags
+      ? JSON.parse(tags)
+      : [];
+
+    const parsedColors =
+      colors
+        ? JSON.parse(colors)
+        : [];
+
+    const parsedAdditionalInformation =
+      additionalInformation
+        ? JSON.parse(
+            additionalInformation
+          )
+        : {};
+
     let thumbnailUrl = "";
 
     const galleryUrls = [];
 
     if (
-  req.files &&
-  req.files.thumbnail
-) {
-  const file =
-    req.files.thumbnail[0];
+      req.files &&
+      req.files.thumbnail
+    ) {
+      const file =
+        req.files.thumbnail[0];
 
-  const result =
-    await new Promise(
-      (resolve, reject) => {
-        cloudinary.uploader
-          .upload_stream(
-            {
-              folder:
-                "furniture/products/thumbnails",
-            },
-            (error, result) => {
-              if (error)
-                reject(error);
+      const result =
+        await new Promise(
+          (
+            resolve,
+            reject
+          ) => {
+            cloudinary.uploader
+              .upload_stream(
+                {
+                  folder:
+                    "furniture/products/thumbnails",
+                },
+                (
+                  error,
+                  result
+                ) => {
+                  if (error)
+                    reject(error);
 
-              resolve(result);
+                  resolve(
+                    result
+                  );
+                }
+              )
+              .end(
+                file.buffer
+              );
+          }
+        );
+
+      thumbnailUrl =
+        result.secure_url;
+    }
+
+    if (
+      req.files &&
+      req.files.images
+    ) {
+      for (const file of req.files
+        .images) {
+        const result =
+          await new Promise(
+            (
+              resolve,
+              reject
+            ) => {
+              cloudinary.uploader
+                .upload_stream(
+                  {
+                    folder:
+                      "furniture/products/gallery",
+                  },
+                  (
+                    error,
+                    result
+                  ) => {
+                    if (error)
+                      reject(
+                        error
+                      );
+
+                    resolve(
+                      result
+                    );
+                  }
+                )
+                .end(
+                  file.buffer
+                );
             }
-          )
-          .end(file.buffer);
+          );
+
+        galleryUrls.push(
+          result.secure_url
+        );
       }
-    );
+    }
 
-  thumbnailUrl =
-    result.secure_url;
-}
+    const product =
+      await Product.create({
+        title,
+        slug:
+          generatedSlug,
 
-if (
-  req.files &&
-  req.files.images
-) {
-  for (const file of req.files
-    .images) {
-    const result =
-      await new Promise(
-        (resolve, reject) => {
-          cloudinary.uploader
-            .upload_stream(
-              {
-                folder:
-                  "furniture/products/gallery",
-              },
-              (
-                error,
-                result
-              ) => {
-                if (error)
-                  reject(error);
+        category,
 
-                resolve(result);
-              }
-            )
-            .end(file.buffer);
-        }
-      );
+        brand,
+        sku,
 
-    galleryUrls.push(
-      result.secure_url
-    );
+        shortDescription,
+        description,
+
+        price,
+        oldPrice,
+        discount,
+
+        quantity,
+        stock,
+
+        color,
+        material,
+
+        thumbnail:
+          thumbnailUrl,
+
+        images:
+          galleryUrls,
+
+        features:
+          parsedFeatures,
+
+        tags:
+          parsedTags,
+
+        colors:
+          parsedColors,
+
+        seoTitle,
+        seoDescription,
+
+        featured,
+        active,
+
+        additionalInformation:
+          parsedAdditionalInformation,
+
+        createdBy:
+          req.user.id,
+      });
+
+    res.status(201).json({
+      success: true,
+      message:
+        "Product created successfully",
+      product,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message:
+        "Server Error",
+    });
   }
-}
-
-const product =
-  await Product.create({
-    title,
-    slug,
-
-    category,
-
-    brand,
-    sku,
-
-    shortDescription,
-    description,
-
-    price,
-    oldPrice,
-    discount,
-
-    quantity,
-    stock,
-
-    color,
-    material,
-
-    thumbnail: thumbnailUrl,
-
-    images: galleryUrls,
-
-    features,
-    tags,
-    colors,
-
-    seoTitle,
-    seoDescription,
-
-    featured,
-    active,
-
-    additionalInformation,
-
-    createdBy: req.user.id,
-  });
-
-res.status(201).json({
-  success: true,
-  message: "Product created successfully",
-  product,
-});
-
-} catch (error) {
-  console.log(error);
-
-  res.status(500).json({
-    success: false,
-    message: "Server Error",
-  });
-}
 };
 
 
@@ -295,10 +353,198 @@ const updateProduct = async (
       });
     }
 
+    const parseField = (
+      value
+    ) => {
+      if (
+        !value ||
+        value === "undefined"
+      ) {
+        return undefined;
+      }
+
+      let parsed =
+        JSON.parse(value);
+
+      // Handle old malformed data
+      if (
+        Array.isArray(parsed) &&
+        parsed.length === 1 &&
+        typeof parsed[0] ===
+          "string" &&
+        parsed[0].startsWith(
+          "["
+        )
+      ) {
+        parsed = JSON.parse(
+          parsed[0]
+        );
+      }
+
+      return parsed;
+    };
+
+    // Parse JSON fields
+    req.body.features =
+      parseField(
+        req.body.features
+      );
+
+    req.body.tags =
+      parseField(
+        req.body.tags
+      );
+
+    req.body.colors =
+      parseField(
+        req.body.colors
+      );
+
+    req.body.additionalInformation =
+      parseField(
+        req.body
+          .additionalInformation
+      );
+
+    // Remove undefined fields
     Object.keys(req.body).forEach(
       (key) => {
-        product[key] = req.body[key];
+        if (
+          req.body[key] ===
+          undefined
+        ) {
+          delete req.body[key];
+        }
       }
+    );
+
+    // Update normal fields
+    Object.keys(req.body).forEach(
+      (key) => {
+        product[key] =
+          req.body[key];
+      }
+    );
+
+    // Update Thumbnail
+    if (
+      req.files &&
+      req.files.thumbnail
+    ) {
+      const file =
+        req.files.thumbnail[0];
+
+      const result =
+        await new Promise(
+          (
+            resolve,
+            reject
+          ) => {
+            cloudinary.uploader
+              .upload_stream(
+                {
+                  folder:
+                    "furniture/products/thumbnails",
+                },
+                (
+                  error,
+                  result
+                ) => {
+                  if (
+                    error
+                  ) {
+                    reject(
+                      error
+                    );
+                  }
+
+                  resolve(
+                    result
+                  );
+                }
+              )
+              .end(
+                file.buffer
+              );
+          }
+        );
+
+      product.thumbnail =
+        result.secure_url;
+    }
+
+    // Update Gallery Images
+    if (
+      req.files &&
+      req.files.images
+    ) {
+      const galleryUrls =
+        [];
+
+      for (const file of req
+        .files.images) {
+        const result =
+          await new Promise(
+            (
+              resolve,
+              reject
+            ) => {
+              cloudinary.uploader
+                .upload_stream(
+                  {
+                    folder:
+                      "furniture/products/gallery",
+                  },
+                  (
+                    error,
+                    result
+                  ) => {
+                    if (
+                      error
+                    ) {
+                      reject(
+                        error
+                      );
+                    }
+
+                    resolve(
+                      result
+                    );
+                  }
+                )
+                .end(
+                  file.buffer
+                );
+            }
+          );
+
+        galleryUrls.push(
+          result.secure_url
+        );
+      }
+
+      product.images =
+        galleryUrls;
+    }
+
+    console.log(
+      "FEATURES:",
+      product.features
+    );
+
+    console.log(
+      "TAGS:",
+      product.tags
+    );
+
+    console.log(
+      "COLORS:",
+      product.colors
+    );
+
+    console.log(
+      "ADDITIONAL:",
+      product.additionalInformation
     );
 
     await product.save();
@@ -314,7 +560,8 @@ const updateProduct = async (
 
     res.status(500).json({
       success: false,
-      message: "Server Error",
+      message:
+        "Server Error",
     });
   }
 };
