@@ -5,7 +5,7 @@ import CartItem from "../components/CartItem";
 import OrderSummary from "../components/OrderSummary";
 
 const Cart = () => {
-  const { cartItems, clearCart } = useCart();
+  const { cartItems, clearCart , cartSubtotal} = useCart();
 
   return (
     <>
@@ -39,7 +39,7 @@ const Cart = () => {
               <div className="space-y-6">
                 {cartItems.map((item) => (
                   <CartItem
-                    key={item.id}
+                    key={item._id}
                     item={item}
                   />
                 ))}
@@ -72,7 +72,10 @@ const Cart = () => {
             </div>
 
             {/* RIGHT */}
-            <OrderSummary />
+           <OrderSummary
+  items={cartItems}
+  subtotal={cartSubtotal}
+/>
 
           </div>
         </div>

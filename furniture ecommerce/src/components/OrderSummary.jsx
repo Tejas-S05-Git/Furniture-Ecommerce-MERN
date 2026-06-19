@@ -1,17 +1,23 @@
 import React from "react";
-import { useCart } from "../context/CartContext";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+const OrderSummary = ({  showButton = true,
+  paymentButton = false,
+  onPaymentClick,
+  items = [],
+  subtotal = 0, }) => {
 
-const OrderSummary = ({ showButton = true, paymentButton = false, onPaymentClick, }) => {
-  const { cartItems, cartSubtotal } =
-    useCart();
+const shipping = 0;
+const tax = 0;
 
-  const shipping = 0;
-  const tax = 0;
-  const discount = 100;
+const discount =
+  subtotal > 1000 ? 100 : 0;
 
-  const total =
-    cartSubtotal + shipping + tax - discount;
+const total =
+  subtotal +
+  shipping +
+  tax -
+  discount;
 
   const navigate = useNavigate();  
 
@@ -27,12 +33,12 @@ const OrderSummary = ({ showButton = true, paymentButton = false, onPaymentClick
       <div className="space-y-4 text-lg">
         <div className="flex justify-between">
           <span>Items</span>
-          <span>{cartItems.length}</span>
+          <span>{items.length}</span>
         </div>
 
         <div className="flex justify-between">
           <span>Sub Total</span>
-          <span>${cartSubtotal}</span>
+          <span>${subtotal}</span>
         </div>
 
         <div className="flex justify-between">
@@ -58,11 +64,26 @@ const OrderSummary = ({ showButton = true, paymentButton = false, onPaymentClick
 
     {showButton && (
   <button
-    onClick={() => navigate("/checkout")}
-    className="w-full mt-8 h-14 rounded-full bg-primary text-white font-semibold"
-  >
-    Proceed to Checkout
-  </button>
+  onClick={() => {
+    if (items.length === 0) {
+      toast.error(
+        "Your cart is empty"
+      );
+      return;
+    }
+
+    navigate("/checkout");
+  }}
+  disabled={items.length === 0}
+  className={`w-full mt-8 h-14 rounded-full font-semibold transition-all
+    ${
+      items.length === 0
+        ? "bg-zinc-300 text-zinc-500 cursor-not-allowed"
+        : "bg-primary text-white"
+    }`}
+>
+  Proceed to Checkout
+</button>
 )}
 
 {paymentButton && (

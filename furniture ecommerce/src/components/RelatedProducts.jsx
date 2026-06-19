@@ -9,6 +9,7 @@ import ProductCard from "./ProductCard";
 const RelatedProducts = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { id } = useParams();
 
   const fetchRelatedProducts =
     async () => {
@@ -40,7 +41,7 @@ const RelatedProducts = () => {
   }, [id]);
 
 
-  const { id } = useParams();
+  
 
 
 

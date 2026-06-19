@@ -8,18 +8,87 @@ import {
     Clock,
 } from "lucide-react";
 import toast from "react-hot-toast";
-
-import ordersData from "../../../data/ordersData";
 import StatusBadge from "../../../components/common/StatusBadge";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import api from "../../../services/api";
 
 const ViewOrder = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [order, setOrder] = useState(null);
+     const [orderStatus, setOrderStatus] =useState("");
 
-    const order = ordersData.find(
-        (item) => item.id === id
-    );
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchOrder();
+    }, [id]);
+
+    
+
+    useEffect(() => {
+        if (order) {
+            setOrderStatus(
+                order.orderStatus
+            );
+        }
+    }, [order]);
+
+    const updateStatus =
+        async () => {
+            try {
+                await api.put(
+                    `/orders/${order._id}/status`,
+                    {
+                        orderStatus,
+                    }
+                );
+
+                toast.success(
+                    "Order updated"
+                );
+
+                fetchOrder();
+
+            } catch (error) {
+                console.log(error);
+
+                toast.error(
+                    "Update failed"
+                );
+            }
+        };
+
+    const fetchOrder =
+        async () => {
+            try {
+                const response =
+                    await api.get(
+                        `/orders/${id}`
+                    );
+
+                setOrder(
+                    response.data.order
+                );
+
+            } catch (error) {
+                console.log(error);
+
+                toast.error(
+                    "Failed to load order"
+                );
+            } finally {
+                setLoading(false);
+            }
+        };
+
+    if (loading) {
+        return (
+            <div className="p-10">
+                Loading...
+            </div>
+        );
+    }
 
     if (!order) {
         return (
@@ -29,14 +98,13 @@ const ViewOrder = () => {
         );
     }
 
-    const [orderStatus, setOrderStatus] =
-        useState(order.orderStatus);
+   
 
     const timelineSteps = [
-        "Pending",
-        "Processing",
-        "Shipped",
-        "Delivered",
+        "pending",
+        "processing",
+        "shipped",
+        "delivered",
     ];
 
     const currentStep =
@@ -90,11 +158,14 @@ const ViewOrder = () => {
               font-bold
               "
                         >
-                            {order.id}
+                            #{order._id.slice(-8)}
                         </h1>
 
                         <p className="text-zinc-500">
-                            Created on {order.createdAt}
+                            Created on{" "}
+                            {new Date(
+                                order.createdAt
+                            ).toLocaleDateString()}
                         </p>
                     </div>
 
@@ -128,37 +199,33 @@ const ViewOrder = () => {
     outline-none
     "
                         >
-                            <option value="Pending">
+                            <option value="pending">
                                 Pending
                             </option>
 
-                            <option value="Processing">
+                            <option value="processing">
                                 Processing
                             </option>
 
-                            <option value="Shipped">
+                            <option value="shipped">
                                 Shipped
                             </option>
 
-                            <option value="Delivered">
+                            <option value="delivered">
                                 Delivered
                             </option>
 
-                            <option value="Cancelled">
+                            <option value="cancelled">
                                 Cancelled
                             </option>
 
-                            <option value="Returned">
+                            <option value="returned">
                                 Returned
                             </option>
                         </select>
 
                         <button
-                            onClick={() => {
-                                toast.success(
-                                    `Order status changed to ${orderStatus}`
-                                );
-                            }}
+                            onClick={updateStatus}
                             className="
     bg-primary
     text-white
@@ -210,7 +277,9 @@ const ViewOrder = () => {
                             <span className="font-medium">
                                 Name:
                             </span>{" "}
-                            {order.customer.name}
+                            {order.customer?.firstName}
+                            {" "}
+                            {order.customer?.lastName}
                         </p>
 
                         <p>
@@ -224,7 +293,7 @@ const ViewOrder = () => {
                             <span className="font-medium">
                                 Phone:
                             </span>{" "}
-                            {order.customer.phone}
+                            {order.shippingAddress?.phone}
                         </p>
                     </div>
                 </div>
@@ -251,9 +320,49 @@ const ViewOrder = () => {
                         </h2>
                     </div>
 
-                    <p>
-                        {order.shippingAddress}
-                    </p>
+                    <div className="space-y-2">
+
+                        <p>
+                            {
+                                order.shippingAddress
+                                    ?.fullName
+                            }
+                        </p>
+
+                        <p>
+                            {
+                                order.shippingAddress
+                                    ?.address
+                            }
+                        </p>
+
+                        <p>
+                            {
+                                order.shippingAddress
+                                    ?.city
+                            }
+                            ,
+                            {
+                                order.shippingAddress
+                                    ?.state
+                            }
+                        </p>
+
+                        <p>
+                            {
+                                order.shippingAddress
+                                    ?.postalCode
+                            }
+                        </p>
+
+                        <p>
+                            {
+                                order.shippingAddress
+                                    ?.country
+                            }
+                        </p>
+
+                    </div>
                 </div>
 
                 {/* Payment */}
@@ -283,7 +392,7 @@ const ViewOrder = () => {
                             <span className="font-medium">
                                 Method:
                             </span>{" "}
-                            {order.paymentMethod}
+                            {order.paymentMethod.toUpperCase()}
                         </p>
 
                         <p>
@@ -326,53 +435,40 @@ const ViewOrder = () => {
                 </div>
 
                 <div className="space-y-5">
-                    {order.products.map(
-                        (product) => (
-                            <div
-                                key={product.id}
-                                className="
-                flex
-                flex-col
-                sm:flex-row
-                gap-4
-                items-start
-                sm:items-center
-                justify-between
-                border-b
-                pb-4
-                "
-                            >
-                                <div className="flex gap-4">
-                                    <img
-                                        src={product.image}
-                                        alt=""
-                                        className="
-                    w-20
-                    h-20
-                    rounded-2xl
-                    object-cover
-                    "
-                                    />
+                    {order.items.map((item) => (
+                        <div
+                            key={item._id}
+                            className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between border-b pb-4"
+                        >
 
-                                    <div>
-                                        <h3 className="font-medium">
-                                            {product.title}
-                                        </h3>
+                            <div className="flex gap-4">
 
-                                        <p className="text-zinc-500 text-sm">
-                                            Qty:
-                                            {" "}
-                                            {product.quantity}
-                                        </p>
-                                    </div>
+                                <img
+                                    src={item.thumbnail}
+                                    alt={item.title}
+                                    className="w-20 h-20 rounded-2xl object-cover"
+                                />
+
+                                <div>
+                                    <h3 className="font-medium">
+                                        {item.title}
+                                    </h3>
+
+                                    <p className="text-sm text-zinc-500">
+                                        Qty :
+                                        {item.quantity}
+                                    </p>
                                 </div>
 
-                                <p className="font-semibold">
-                                    ₹{product.price}
-                                </p>
                             </div>
-                        )
-                    )}
+
+                            <p className="font-semibold">
+                                ₹{item.subtotal}
+                            </p>
+
+                        </div>
+                    ))}
+
                 </div>
             </div>
 

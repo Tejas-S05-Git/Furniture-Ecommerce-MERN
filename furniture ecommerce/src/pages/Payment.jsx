@@ -1,24 +1,86 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import OrderSummary from "../components/OrderSummary";
 import FeaturesSection from "../components/FeaturesSection";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+
+import api from "../services/api";
 
 const Payment = () => {
+    const { id } = useParams();
     const [paymentMethod, setPaymentMethod] = useState("paypal");
     const navigate = useNavigate();
 
-    const handlePayment = () => {
-  toast.loading("Processing payment...");
+    const [order, setOrder] =useState(null);
 
-  setTimeout(() => {
-    toast.dismiss();
+    const [loading, setLoading] =useState(true);
 
-    toast.success("Payment Successful 🎉");
 
-    navigate("/order-success");
-  }, 1800);
-};
+    const fetchOrder =
+        async () => {
+            try {
+                const response =
+                    await api.get(
+                        `/orders/${id}`
+                    );
+
+                    console.log(response.data);
+
+                setOrder(
+                    response.data.order
+                );
+            } catch (error) {
+                console.log(error);
+
+                toast.error(
+                    "Order not found"
+                );
+            } finally {
+                setLoading(false);
+            }
+        };
+
+    useEffect(() => {
+        fetchOrder();
+    }, [id]);
+
+ const handlePayment =
+  async () => {
+    try {
+      toast.loading(
+        "Processing..."
+      );
+
+      toast.dismiss();
+
+      toast.success(
+        "Order Placed Successfully"
+      );
+
+      navigate(
+        `/order-success/${order._id}`
+      );
+
+    } catch (error) {
+      toast.dismiss();
+
+      toast.error(
+        "Payment Failed"
+      );
+    }
+  };
+  if (!order?.items?.length) {
+  navigate("/cart");
+}
+
+  if (loading) {
+  return <div>Loading...</div>;
+}
+
+if (!order) {
+  return <div>Order Not Found</div>;
+}
     return (
         <>
             <section className="bg-secondary py-16 lg:py-24 overflow-hidden">
@@ -190,25 +252,31 @@ const Payment = () => {
                             </div>
                         </div>
 
-                        {/* RIGHT */}
-                        <div
-                            className="lg:col-span-4"
-                            data-aos="fade-left"
-                            data-aos-delay="200"
-                        >
-                            <OrderSummary showButton={false} paymentButton={true} onPaymentClick={handlePayment} />
-                            <div
-                                className="mt-6"
-                                data-aos="fade-up"
-                                data-aos-delay="300"
-                            >
+                      {/* RIGHT */}
+<div
+  className="lg:col-span-4"
+  data-aos="fade-left"
+  data-aos-delay="200"
+>
+ 
 
-                            </div>
-                        </div>
+  <OrderSummary
+  items={order?.items || []}
+  subtotal={
+    order?.totalAmount || 0
+  }
+  showButton={false}
+  paymentButton={true}
+  onPaymentClick={
+    handlePayment
+  }
+/>
+</div>
+                       
                     </div>
                 </div>
             </section>
-            <FeaturesSection/>
+            <FeaturesSection />
         </>
 
     );

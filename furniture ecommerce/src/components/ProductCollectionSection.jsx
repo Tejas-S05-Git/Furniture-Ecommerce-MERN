@@ -11,14 +11,35 @@ const ProductCollectionSection = ({ products }) => {
 
   const [activeFilter, setActiveFilter] = useState("all");
 
-  const filteredProducts =
-    activeFilter === "all"
-      ? products
-      : products.filter(
-        (product) =>
-          product.tags?.includes(activeFilter) ||
-          product.category?.toLowerCase() === activeFilter
-      );
+let filteredProducts = [...products];
+
+if (activeFilter === "featured") {
+  filteredProducts = filteredProducts.filter(
+    (product) => product.featured
+  );
+}
+
+if (activeFilter === "best") {
+  filteredProducts = filteredProducts.filter(
+    (product) => (product.rating || 0) >= 4
+  );
+}
+
+if (activeFilter === "latest") {
+  filteredProducts.sort(
+    (a, b) =>
+      new Date(b.createdAt) -
+      new Date(a.createdAt)
+  );
+}
+
+if (!products?.length) {
+  return (
+    <div className="text-center py-20">
+      No Products Found
+    </div>
+  );
+}
 
 
   return (
@@ -48,8 +69,8 @@ const ProductCollectionSection = ({ products }) => {
           <button
             onClick={() => setActiveFilter("all")}
             className={`px-6 py-3 rounded-full transition-all duration-300 ${activeFilter === "all"
-                ? "bg-primary text-white"
-                : "border border-zinc-300 bg-white text-zinc-800"
+              ? "bg-primary text-white"
+              : "border border-zinc-300 bg-white text-zinc-800"
               }`}
           >
             All Products
@@ -58,8 +79,8 @@ const ProductCollectionSection = ({ products }) => {
           <button
             onClick={() => setActiveFilter("latest")}
             className={`px-6 py-3 rounded-full transition-all duration-300 ${activeFilter === "latest"
-                ? "bg-primary text-white"
-                : "border border-zinc-300 bg-white text-zinc-800"
+              ? "bg-primary text-white"
+              : "border border-zinc-300 bg-white text-zinc-800"
               }`}
           >
             Latest Products
@@ -68,8 +89,8 @@ const ProductCollectionSection = ({ products }) => {
           <button
             onClick={() => setActiveFilter("best")}
             className={`px-6 py-3 rounded-full transition-all duration-300 ${activeFilter === "best"
-                ? "bg-primary text-white"
-                : "border border-zinc-300 bg-white text-zinc-800"
+              ? "bg-primary text-white"
+              : "border border-zinc-300 bg-white text-zinc-800"
               }`}
           >
             Best Sellers
@@ -78,8 +99,8 @@ const ProductCollectionSection = ({ products }) => {
           <button
             onClick={() => setActiveFilter("featured")}
             className={`px-6 py-3 rounded-full transition-all duration-300 ${activeFilter === "featured"
-                ? "bg-primary text-white"
-                : "border border-zinc-300 bg-white text-zinc-800"
+              ? "bg-primary text-white"
+              : "border border-zinc-300 bg-white text-zinc-800"
               }`}
           >
             Featured Products
@@ -128,8 +149,8 @@ const ProductCollectionSection = ({ products }) => {
               },
             }}
           >
-            {products.map((product) => (
-              <SwiperSlide key={product.id}>
+            {filteredProducts.map((product) => (
+              <SwiperSlide key={product._id}>
                 <ProductCard product={product} />
               </SwiperSlide>
             ))}

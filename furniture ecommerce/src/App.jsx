@@ -109,7 +109,7 @@ const App = () => {
         />
 
         <Route
-          path="payment"
+          path="payment/:id"
           element={
             <ProtectedRoute>
               <Payment />
@@ -136,7 +136,7 @@ const App = () => {
         />
 
         <Route
-          path="order-success"
+          path="order-success/:id"
           element={
             <ProtectedRoute>
               <OrderSuccess />

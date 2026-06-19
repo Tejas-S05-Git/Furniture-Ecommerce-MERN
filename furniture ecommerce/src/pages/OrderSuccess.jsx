@@ -1,24 +1,55 @@
 import React from "react";
 import { Check } from "lucide-react";
 import HeroPage from "../components/HeroPage";
-import { useCart } from "../context/CartContext";
-import products from "../data/products";
 import FeaturesSection from "../components/FeaturesSection";
-import { useOrders } from "../context/OrderContext";
-import { useEffect } from "react";
+import { useParams } from "react-router-dom";
+import api from "../services/api";
+import { useEffect, useState } from "react";
 
 const OrderSuccess = () => {
-    const { placeOrder } = useOrders();
-    const { cartItems, cartSubtotal } = useCart();
+    const { id } = useParams();
+
+    const [order, setOrder] = useState(null);
+
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
-  if (cartItems.length > 0) {
-    placeOrder(
-      cartItems,
-      cartSubtotal,
-      "Paypal"
-    );
-  }
-}, []);
+        const fetchOrder =
+            async () => {
+                try {
+                    const response =
+                        await api.get(
+                            `/orders/${id}`
+                        );
+
+                    setOrder(
+                        response.data.order
+                    );
+                } catch (error) {
+                    console.log(error);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+        fetchOrder();
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="py-20 text-center">
+                Loading...
+            </div>
+        );
+    }
+
+    if (!order) {
+        return (
+            <div className="py-20 text-center">
+                Order Not Found
+            </div>
+        );
+    }
     return (
         <>
             <HeroPage
@@ -64,7 +95,7 @@ const OrderSuccess = () => {
                                 Order ID
                             </p>
                             <h4 className="font-semibold">
-                                #SDGT1254FD
+                                #{order._id.slice(-8).toUpperCase()}
                             </h4>
                         </div>
 
@@ -72,8 +103,8 @@ const OrderSuccess = () => {
                             <p className="text-sm text-zinc-700">
                                 Payment Method
                             </p>
-                            <h4 className="font-semibold">
-                                Paypal
+                            <h4 className="font-semibold capitalize">
+                                {order.paymentMethod}
                             </h4>
                         </div>
 
@@ -82,7 +113,7 @@ const OrderSuccess = () => {
                                 Transaction ID
                             </p>
                             <h4 className="font-semibold">
-                                TR542SSF
+                                N/A
                             </h4>
                         </div>
 
@@ -91,13 +122,55 @@ const OrderSuccess = () => {
                                 Delivery Date
                             </p>
                             <h4 className="font-semibold">
-                                24 April 2026
+                                {new Date(
+                                    new Date(order.createdAt).getTime() +
+                                    7 * 24 * 60 * 60 * 1000
+                                ).toLocaleDateString()}
                             </h4>
                         </div>
+                        
 
                         <button className="bg-primary text-white rounded-full h-12 px-6">
                             Download Invoice
                         </button>
+                    </div>
+
+                    <div className="bg-white border border-zinc-200 rounded-3xl p-6 mb-8">
+
+                        <h3 className="text-xl font-bold mb-4">
+                            Shipping Address
+                        </h3>
+
+                        <div className="space-y-2">
+
+                            <p>
+                                {order.shippingAddress?.fullName}
+                            </p>
+
+                            <p>
+                                {order.shippingAddress?.phone}
+                            </p>
+
+                            <p>
+                                {order.shippingAddress?.address}
+                            </p>
+
+                            <p>
+                                {order.shippingAddress?.city},
+                                {" "}
+                                {order.shippingAddress?.state}
+                            </p>
+
+                            <p>
+                                {order.shippingAddress?.postalCode}
+                            </p>
+
+                            <p>
+                                {order.shippingAddress?.country}
+                            </p>
+
+                        </div>
+
                     </div>
 
                     {/* ORDER DETAILS */}
@@ -118,55 +191,50 @@ const OrderSuccess = () => {
 
                         {/* products */}
                         <div className="space-y-6">
-                            {cartItems.map((item, index) => {
-                                const product = products.find(
-                                    (p) => p.id === item.id
-                                );
+                            {order.items.map((item) => (
+                                <div
+                                    key={item._id}
+                                    className="flex items-center justify-between gap-4 py-5"
+                                >
+                                    <div className="flex items-center gap-4">
 
-                                return (
-                                    <div
-                                        key={item.id || index}
-                                        className="flex items-center justify-between gap-4 py-5"
-                                    >
-                                        <div className="flex items-center gap-4">
-
-                                            <div className="w-20 h-20 rounded-xl bg-zinc-100 overflow-hidden shrink-0">
-                                                <img
-                                                    src={product?.images?.[0]}
-                                                    alt={product?.title}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <h3 className="text-lg font-medium">
-                                                    {product?.title}
-                                                </h3>
-
-                                                <p className="text-sm text-zinc-500">
-                                                    Color : {product?.color}
-                                                </p>
-                                            </div>
+                                        <div className="w-20 h-20 rounded-xl bg-zinc-100 overflow-hidden shrink-0">
+                                            <img
+                                                src={item.thumbnail}
+                                                alt={item.title}
+                                                className="w-full h-full object-cover"
+                                            />
                                         </div>
 
-                                        <div className="text-lg font-semibold">
-                                            ${item.price}
+                                        <div>
+                                            <h3 className="text-lg font-medium">
+                                                {item.title}
+                                            </h3>
+
+                                            <p className="text-sm text-zinc-500">
+                                                Qty : {item.quantity}
+                                            </p>
                                         </div>
+
                                     </div>
-                                );
-                            })}
+
+                                    <div className="text-lg font-semibold">
+                                        ₹{item.subtotal}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
                         {/* totals */}
                         <div className="border-t mt-8 pt-6 space-y-4">
                             <div className="flex justify-between">
                                 <span>Shipping</span>
-                                <span>$0.00</span>
+                                <span>₹0</span>
                             </div>
 
                             <div className="flex justify-between">
                                 <span>Taxes</span>
-                                <span>$0.00</span>
+                                <span>₹0</span>
                             </div>
 
                             <div className="flex justify-between">
@@ -176,13 +244,13 @@ const OrderSuccess = () => {
 
                             <div className="flex justify-between border-t pt-5 text-xl font-semibold">
                                 <span>Total</span>
-                                <span>${cartSubtotal - 100}</span>
+                                <span>₹{order.totalAmount}</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
-            <FeaturesSection/>
+            <FeaturesSection />
         </>
     );
 };

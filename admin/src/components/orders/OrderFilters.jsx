@@ -43,78 +43,68 @@ const OrderFilters = ({
         {/* Status */}
         <select
           value={status}
-          onChange={(e) =>
-            setStatus(
-              e.target.value
-            )
-          }
+          onChange={(e) => setStatus(e.target.value)}
           className="
-          border
-          border-zinc-200
-          rounded-2xl
-          px-4
-          py-3
-          outline-none
-          "
+  border
+  border-zinc-200
+  rounded-2xl
+  px-4
+  py-3
+  outline-none
+  "
         >
-          <option value="">
-            All Status
-          </option>
+          <option value="">All Status</option>
 
-          <option value="Pending">
+          <option value="pending">
             Pending
           </option>
 
-          <option value="Processing">
+          <option value="processing">
             Processing
           </option>
 
-          <option value="Shipped">
+          <option value="shipped">
             Shipped
           </option>
 
-          <option value="Delivered">
+          <option value="delivered">
             Delivered
           </option>
 
-          <option value="Cancelled">
+          <option value="cancelled">
             Cancelled
           </option>
         </select>
 
         {/* Payment */}
         <select
-          value={payment}
-          onChange={(e) =>
-            setPayment(
-              e.target.value
-            )
-          }
-          className="
-          border
-          border-zinc-200
-          rounded-2xl
-          px-4
-          py-3
-          outline-none
-          "
-        >
-          <option value="">
-            All Payments
-          </option>
+  value={payment}
+  onChange={(e) => setPayment(e.target.value)}
+  className="
+  border
+  border-zinc-200
+  rounded-2xl
+  px-4
+  py-3
+  outline-none
+  "
+>
+  <option value="">
+    All Payments
+  </option>
 
-          <option value="Paid">
-            Paid
-          </option>
+  <option value="paid">
+    Paid
+  </option>
 
-          <option value="Pending">
-            Pending
-          </option>
+  <option value="pending">
+    Pending
+  </option>
 
-          <option value="Refunded">
-            Refunded
-          </option>
-        </select>
+  <option value="failed">
+    Failed
+  </option>
+</select>
       </div>
     </div>
   );

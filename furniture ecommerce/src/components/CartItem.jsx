@@ -16,7 +16,7 @@ const CartItem = ({ item }) => {
       {/* remove */}
       <button
         onClick={() =>
-          removeFromCart(item.id)
+          removeFromCart(item._id)
         }
         className="text-2xl"
       >
@@ -26,7 +26,10 @@ const CartItem = ({ item }) => {
       {/* product */}
       <div className="flex items-center gap-4">
         <img
-          src={item.images?.[0]}
+          src={
+            item.thumbnail ||
+            item.images?.[0]
+          }
           alt={item.title}
           className="w-20 h-20 rounded-2xl bg-secondary object-cover"
         />
@@ -51,7 +54,7 @@ const CartItem = ({ item }) => {
       <div className="h-12 border rounded-full flex items-center w-fit overflow-hidden">
         <button
           onClick={() =>
-            decreaseQuantity(item.id)
+            decreaseQuantity(item._id)
           }
           className="px-4 text-xl"
         >
@@ -64,7 +67,7 @@ const CartItem = ({ item }) => {
 
         <button
           onClick={() =>
-            increaseQuantity(item.id)
+            increaseQuantity(item._id)
           }
           className="px-4 text-xl"
         >

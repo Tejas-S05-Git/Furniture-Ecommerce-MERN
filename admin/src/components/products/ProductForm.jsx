@@ -73,8 +73,8 @@ const ProductForm = ({ initialData = null,
                 console.log(error);
             }
         };
-  
-    
+
+
 
     useEffect(() => {
         if (initialData) {
@@ -90,7 +90,14 @@ const ProductForm = ({ initialData = null,
             );
 
             setTags(
-                initialData.tags?.join(", ") || ""
+                initialData.tags
+                    ?.map((tag) =>
+                        String(tag).replace(
+                            /[\[\]"]/g,
+                            ""
+                        )
+                    )
+                    .join(", ") || ""
             );
 
             setColors(
@@ -107,7 +114,7 @@ const ProductForm = ({ initialData = null,
         }
     }, [initialData]);
 
-    
+
 
     const addFeature = () => {
         setFeatures([
@@ -172,158 +179,158 @@ const ProductForm = ({ initialData = null,
 
         setGalleryPreview(previews);
     };
-   const handleSubmit = async (e) => {
-  e.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-  try {
-    const data = new FormData();
+        try {
+            const data = new FormData();
 
-    data.append("title", formData.title);
-    data.append("category", formData.category);
-    data.append("brand", formData.brand);
-    data.append("sku", formData.sku);
+            data.append("title", formData.title);
+            data.append("category", formData.category);
+            data.append("brand", formData.brand);
+            data.append("sku", formData.sku);
 
-    data.append(
-      "shortDescription",
-      formData.shortDescription
-    );
+            data.append(
+                "shortDescription",
+                formData.shortDescription
+            );
 
-    data.append(
-      "description",
-      formData.description
-    );
+            data.append(
+                "description",
+                formData.description
+            );
 
-    data.append("price", formData.price);
-    data.append("oldPrice", formData.oldPrice);
+            data.append("price", formData.price);
+            data.append("oldPrice", formData.oldPrice);
 
-    data.append(
-      "discount",
-      formData.discount
-    );
+            data.append(
+                "discount",
+                formData.discount
+            );
 
-    data.append(
-      "quantity",
-      formData.quantity
-    );
+            data.append(
+                "quantity",
+                formData.quantity
+            );
 
-    data.append("stock", formData.stock);
+            data.append("stock", formData.stock);
 
-    data.append("color", formData.color);
+            data.append("color", formData.color);
 
-    data.append(
-      "material",
-      formData.material
-    );
+            data.append(
+                "material",
+                formData.material
+            );
 
-    data.append(
-      "seoTitle",
-      formData.seoTitle
-    );
+            data.append(
+                "seoTitle",
+                formData.seoTitle
+            );
 
-    data.append(
-      "seoDescription",
-      formData.seoDescription
-    );
+            data.append(
+                "seoDescription",
+                formData.seoDescription
+            );
 
-    data.append(
-      "featured",
-      formData.featured
-    );
+            data.append(
+                "featured",
+                formData.featured
+            );
 
-    data.append(
-      "active",
-      formData.active
-    );
+            data.append(
+                "active",
+                formData.active
+            );
 
-    data.append(
-      "features",
-      JSON.stringify(features)
-    );
+            data.append(
+                "features",
+                JSON.stringify(features)
+            );
 
-    data.append(
-      "tags",
-      JSON.stringify(
-        tags
-          .split(",")
-          .map((tag) =>
-            tag.trim()
-          )
-      )
-    );
+            data.append(
+                "tags",
+                JSON.stringify(
+                    tags
+                        .split(",")
+                        .map((tag) =>
+                            tag.trim()
+                        )
+                )
+            );
 
-    data.append(
-      "colors",
-      JSON.stringify(colors)
-    );
+            data.append(
+                "colors",
+                JSON.stringify(colors)
+            );
 
-    data.append(
-  "additionalInformation",
-  JSON.stringify(
-    formData.additionalInformation || {}
-  )
-);
+            data.append(
+                "additionalInformation",
+                JSON.stringify(
+                    formData.additionalInformation || {}
+                )
+            );
 
-    if (thumbnailFile) {
-      data.append(
-        "thumbnail",
-        thumbnailFile
-      );
-    }
+            if (thumbnailFile) {
+                data.append(
+                    "thumbnail",
+                    thumbnailFile
+                );
+            }
 
-    galleryFiles.forEach(
-      (image) => {
-        data.append(
-          "images",
-          image
-        );
-      }
-    );
+            galleryFiles.forEach(
+                (image) => {
+                    data.append(
+                        "images",
+                        image
+                    );
+                }
+            );
 
-    let response;
+            let response;
 
-    if (isEdit) {
-      response = await api.put(
-        `/products/${initialData._id}`,
-        data,
-        {
-          headers: {
-            "Content-Type":
-              "multipart/form-data",
-          },
+            if (isEdit) {
+                response = await api.put(
+                    `/products/${initialData._id}`,
+                    data,
+                    {
+                        headers: {
+                            "Content-Type":
+                                "multipart/form-data",
+                        },
+                    }
+                );
+            } else {
+                response = await api.post(
+                    "/products",
+                    data,
+                    {
+                        headers: {
+                            "Content-Type":
+                                "multipart/form-data",
+                        },
+                    }
+                );
+            }
+
+            toast.success(
+                response.data.message
+            );
+
+            navigate(
+                "/admin/products"
+            );
+        } catch (error) {
+            console.log(error);
+
+            toast.error(
+                error.response?.data
+                    ?.message ||
+                "Something went wrong"
+            );
         }
-      );
-    } else {
-      response = await api.post(
-        "/products",
-        data,
-        {
-          headers: {
-            "Content-Type":
-              "multipart/form-data",
-          },
-        }
-      );
-    }
+    };
 
-    toast.success(
-      response.data.message
-    );
-
-    navigate(
-      "/admin/products"
-    );
-  } catch (error) {
-    console.log(error);
-
-    toast.error(
-      error.response?.data
-        ?.message ||
-        "Something went wrong"
-    );
-  }
-}; 
-
-const handleAdditionalInfo = (
+    const handleAdditionalInfo = (
         e
     ) => {
         const { name, value } =

@@ -1,87 +1,124 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import PageHeader from "../../../components/common/PageHeader";
 import Pagination from "../../../components/common/Pagination";
 import DeleteModal from "../../../components/common/DeleteModal";
 import EmptyState from "../../../components/common/EmptyState";
-
 import OrderStats from "../../../components/orders/OrderStats";
 import OrderFilters from "../../../components/orders/OrderFilters";
 import OrderTable from "../../../components/orders/OrderTable";
+import api from "../../../services/api";
+import toast from "react-hot-toast";
 
-import ordersData from "../../../data/ordersData";
 
 const Orders = () => {
-  const [orders, setOrders] =
-    useState(ordersData);
-
-  const [search, setSearch] =
-    useState("");
-
-  const [status, setStatus] =
-    useState("");
-
-  const [payment, setPayment] =
-    useState("");
-
-  const [deleteModal, setDeleteModal] =
-    useState(false);
-
-  const [selectedOrder, setSelectedOrder] =
-    useState(null);
-
-  const [currentPage, setCurrentPage] =
-    useState(1);
-
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [payment, setPayment] = useState("");
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const filteredOrders =
-    orders.filter((order) => {
-      const matchesSearch =
-        order.id
-          .toLowerCase()
-          .includes(
-            search.toLowerCase()
-          ) ||
-        order.customer.name
-          .toLowerCase()
-          .includes(
-            search.toLowerCase()
-          );
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
-      const matchesStatus =
-        !status ||
-        order.orderStatus ===
-          status;
+  const fetchOrders =
+    async () => {
+      try {
+        const response =
+          await api.get("/orders");
 
-      const matchesPayment =
-        !payment ||
-        order.paymentStatus ===
-          payment;
+        setOrders(
+          response.data.orders
+        );
+      } catch (error) {
+        console.log(error);
 
-      return (
-        matchesSearch &&
-        matchesStatus &&
-        matchesPayment
-      );
-    });
+        toast.error(
+          "Failed to load orders"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+ const filteredOrders = orders.filter((order) => {
+  const matchesSearch =
+    order._id
+      ?.slice(-8)
+      ?.toLowerCase()
+      ?.includes(search.toLowerCase()) ||
+
+    `${order.customer?.firstName || ""} ${order.customer?.lastName || ""}`
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+  const matchesStatus =
+    !status ||
+    order.orderStatus?.toLowerCase() === status.toLowerCase();
+
+  const matchesPayment =
+    !payment ||
+    order.paymentStatus?.toLowerCase() === payment.toLowerCase();
+
+  return (
+    matchesSearch &&
+    matchesStatus &&
+    matchesPayment
+  );
+});
 
   const totalPages =
     Math.ceil(
       filteredOrders.length /
-        itemsPerPage
+      itemsPerPage
     );
 
   const startIndex =
     (currentPage - 1) *
     itemsPerPage;
 
+    if (loading) {
+  return (
+    <div className="p-10">
+      Loading Orders...
+    </div>
+  );
+}
+
   const paginatedOrders =
     filteredOrders.slice(
       startIndex,
       startIndex +
-        itemsPerPage
+      itemsPerPage
     );
+
+    const handleDeleteOrder =
+  async () => {
+    try {
+      await api.delete(
+        `/orders/${selectedOrder._id}`
+      );
+
+      toast.success(
+        "Order deleted"
+      );
+
+      fetchOrders();
+
+      setDeleteModal(false);
+
+    } catch (error) {
+      console.log(error);
+
+      toast.error(
+        "Delete failed"
+      );
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -90,9 +127,7 @@ const Orders = () => {
         subtitle="Manage customer orders"
       />
 
-      <OrderStats
-        orders={orders}
-      />
+     <OrderStats orders={orders} />
 
       <OrderFilters
         search={search}
@@ -104,7 +139,7 @@ const Orders = () => {
       />
 
       {filteredOrders.length ===
-      0 ? (
+        0 ? (
         <EmptyState
           title="No Orders Found"
           description="Try changing your filters."
@@ -125,18 +160,18 @@ const Orders = () => {
 
       {filteredOrders.length >
         0 && (
-        <Pagination
-          currentPage={
-            currentPage
-          }
-          totalPages={
-            totalPages
-          }
-          setCurrentPage={
-            setCurrentPage
-          }
-        />
-      )}
+          <Pagination
+            currentPage={
+              currentPage
+            }
+            totalPages={
+              totalPages
+            }
+            setCurrentPage={
+              setCurrentPage
+            }
+          />
+        )}
 
       <DeleteModal
         open={deleteModal}
@@ -144,17 +179,7 @@ const Orders = () => {
           setDeleteModal(false)
         }
         title="Delete Order"
-        onDelete={() => {
-          setOrders(
-            orders.filter(
-              (item) =>
-                item.id !==
-                selectedOrder.id
-            )
-          );
-
-          setDeleteModal(false);
-        }}
+        onDelete={handleDeleteOrder}
       />
     </div>
   );

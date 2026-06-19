@@ -34,7 +34,7 @@ const createOrder = async (
     for (const item of items) {
       const product =
         await Product.findById(
-          item.productId
+          item._id
         );
 
       if (!product) {

@@ -27,7 +27,7 @@ const OrderTable = ({
       data={orders}
       renderRow={(order) => (
         <tr
-          key={order.id}
+          key={order._id}
           className="
           border-b
           border-zinc-100
@@ -43,7 +43,7 @@ const OrderTable = ({
               text-primary
               "
             >
-              {order.id}
+              #{order._id.slice(-8)}
             </span>
           </td>
 
@@ -51,7 +51,9 @@ const OrderTable = ({
           <td className="px-6 py-4 min-w-[220px]">
             <div>
               <h3 className="font-medium">
-                {order.customer.name}
+                {order.customer?.firstName}
+                {" "}
+                {order.customer?.lastName}
               </h3>
 
               <p
@@ -60,7 +62,7 @@ const OrderTable = ({
                 text-zinc-500
                 "
               >
-                {order.customer.email}
+                {order.customer?.email}
               </p>
             </div>
           </td>
@@ -77,27 +79,24 @@ const OrderTable = ({
                 {order.paymentMethod}
               </p>
 
-              <StatusBadge
-                status={
-                  order.paymentStatus ===
-                  "Paid"
-                    ? "active"
-                    : "inactive"
-                }
-              />
+             <StatusBadge
+  status={order.paymentStatus}
+/>
             </div>
           </td>
 
           {/* Order Status */}
           <td className="px-6 py-4">
-            <StatusBadge
-              status={order.orderStatus}
-            />
-          </td>
+  <StatusBadge
+    status={order.orderStatus}
+  />
+</td>
 
           {/* Date */}
           <td className="px-6 py-4">
-            {order.createdAt}
+            {new Date(
+              order.createdAt
+            ).toLocaleDateString()}
           </td>
 
           {/* Actions */}
@@ -119,7 +118,7 @@ const OrderTable = ({
                 "
                 onClick={() =>
                   navigate(
-                    `/admin/orders/view/${order.id}`
+                    `/admin/orders/view/${order._id}`
                   )
                 }
               >

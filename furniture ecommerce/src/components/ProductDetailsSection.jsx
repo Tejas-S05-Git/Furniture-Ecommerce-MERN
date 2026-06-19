@@ -6,36 +6,40 @@ import { useNavigate, useParams } from "react-router-dom";
 import api from "../services/api";
 import { useCart } from "../context/CartContext";
 import toast from "react-hot-toast";
+import { useWishlist } from "../context/WishlistContext";
 const ProductDetailsSection = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
+  const { addToWishlist } = useWishlist();
 
   const [loading, setLoading] = useState(true);
+  const [quantity, setQuantity] = useState(1);
 
-  
+  const { addToCart } = useCart();
+  const navigate = useNavigate();
 
-  const [selectedImage,setSelectedImage] =useState("");
+  const [selectedImage, setSelectedImage] = useState("");
   const fetchProduct =
-  async () => {
-    try {
-      const response =
-        await api.get(
-          `/products/${id}`
-        );
+    async () => {
+      try {
+        const response =
+          await api.get(
+            `/products/${id}`
+          );
 
-      setProduct(
-        response.data.product
-      );
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+        setProduct(
+          response.data.product
+        );
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   useEffect(() => {
-  fetchProduct();
-}, [id]);
+    fetchProduct();
+  }, [id]);
 
   useEffect(() => {
     if (product?.images?.length) {
@@ -44,28 +48,20 @@ const ProductDetailsSection = () => {
   }, [product]);
 
   useEffect(() => {
-  if (product) {
-    setSelectedImage(
-      product.thumbnail
+    if (product) {
+      setSelectedImage(
+        product.thumbnail
+      );
+    }
+  }, [product]);
+
+  if (loading) {
+    return (
+      <div className="py-20 text-center">
+        Loading...
+      </div>
     );
   }
-}, [product]);
-
-if (loading) {
-  return (
-    <div className="py-20 text-center">
-      Loading...
-    </div>
-  );
-}
-const allImages = [
-  product.thumbnail,
-  ...(product.images || []),
-];
-  const [quantity, setQuantity] = useState(1);
-  const { addToCart } = useCart();
-  const navigate = useNavigate();
-
   if (!product) {
     return (
       <section className="py-20 text-center">
@@ -73,44 +69,49 @@ const allImages = [
       </section>
     );
   }
+  const allImages = [
+    product.thumbnail,
+    ...(product.images || []),
+  ];
 
-  const currentIndex =
-  allImages.indexOf(
-    selectedImage
-  );
 
- const prevImage = () => {
   const currentIndex =
     allImages.indexOf(
       selectedImage
     );
 
-  const prevIndex =
-    currentIndex === 0
-      ? allImages.length - 1
-      : currentIndex - 1;
+  const prevImage = () => {
+    const currentIndex =
+      allImages.indexOf(
+        selectedImage
+      );
 
-  setSelectedImage(
-    allImages[prevIndex]
-  );
-};
+    const prevIndex =
+      currentIndex === 0
+        ? allImages.length - 1
+        : currentIndex - 1;
+
+    setSelectedImage(
+      allImages[prevIndex]
+    );
+  };
 
   const nextImage = () => {
-  const currentIndex =
-    allImages.indexOf(
-      selectedImage
+    const currentIndex =
+      allImages.indexOf(
+        selectedImage
+      );
+
+    const nextIndex =
+      currentIndex ===
+        allImages.length - 1
+        ? 0
+        : currentIndex + 1;
+
+    setSelectedImage(
+      allImages[nextIndex]
     );
-
-  const nextIndex =
-    currentIndex ===
-    allImages.length - 1
-      ? 0
-      : currentIndex + 1;
-
-  setSelectedImage(
-    allImages[nextIndex]
-  );
-};
+  };
 
 
   return (
@@ -231,13 +232,17 @@ const allImages = [
               </h4>
 
               <div className="flex gap-3">
-               {product.colors?.length > 0 &&((clr, i) => (
-                  <button
-                    key={i}
-                    style={{ backgroundColor: clr }}
-                    className="w-8 h-8 rounded-full border-2 border-white shadow"
-                  />
-                ))}
+                {product.colors?.map(
+                  (clr, i) => (
+                    <button
+                      key={i}
+                      style={{
+                        backgroundColor: clr,
+                      }}
+                      className="w-8 h-8 rounded-full border-2 border-white shadow"
+                    />
+                  )
+                )}
               </div>
             </div>
 
@@ -283,11 +288,42 @@ const allImages = [
                 Add To Cart
               </button>
 
-              <button className="bg-accent text-black h-14 px-8 rounded-full font-semibold hover:opacity-95 transition">
+              <button
+                onClick={() => {
+                  addToCart(product, quantity);
+
+                  toast.success(
+                    "Proceeding to checkout"
+                  );
+
+                  setTimeout(() => {
+                    navigate("/checkout");
+                  }, 500);
+                }}
+                className="
+    bg-accent text-black
+    h-14 px-8 rounded-full
+    font-semibold
+    hover:opacity-95 transition
+  "
+              >
                 Buy Now
               </button>
-
-              <button className="w-14 h-14 rounded-full border border-zinc-200 flex items-center justify-center text-xl hover:bg-primary hover:text-white transition">
+              <button
+                onClick={() => {
+                  addToWishlist(product);
+                  toast.success(
+                    `${product.title} added to wishlist`
+                  );
+                }}
+                className="
+    w-14 h-14 rounded-full
+    border border-zinc-200
+    flex items-center justify-center
+    text-xl hover:bg-primary
+    hover:text-white transition
+  "
+              >
                 <i className="ri-heart-line"></i>
               </button>
             </div>
@@ -306,7 +342,7 @@ const allImages = [
                 <span className="font-semibold">
                   Tags :
                 </span>{" "}
-               {product.tags?.join(", ")}
+                {product.tags?.join(", ")}
               </p>
 
               <div className="flex items-center gap-4 pt-2">

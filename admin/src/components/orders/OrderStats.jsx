@@ -3,32 +3,43 @@ import {
   Clock3,
   Truck,
   CheckCircle2,
+   IndianRupee,
 } from "lucide-react";
-
+import api from "../../services/api";
+import { useEffect } from "react";
+import { useState } from "react";
 const OrderStats = ({ orders }) => {
-  const totalOrders =
-    orders.length;
 
-  const pendingOrders =
-    orders.filter(
-      (order) =>
-        order.orderStatus ===
-        "Pending"
-    ).length;
+  const totalOrders = orders.length;
 
-  const shippedOrders =
-    orders.filter(
-      (order) =>
-        order.orderStatus ===
-        "Shipped"
-    ).length;
+  const pendingOrders = orders.filter(
+    (order) =>
+      order.orderStatus === "pending"
+  ).length;
 
-  const deliveredOrders =
-    orders.filter(
-      (order) =>
-        order.orderStatus ===
-        "Delivered"
-    ).length;
+  const processingOrders = orders.filter(
+    (order) =>
+      order.orderStatus === "processing"
+  ).length;
+
+  const shippedOrders = orders.filter(
+    (order) =>
+      order.orderStatus === "shipped"
+  ).length;
+
+  const deliveredOrders = orders.filter(
+    (order) =>
+      order.orderStatus === "delivered"
+  ).length;
+
+  const totalRevenue = orders
+  .filter(
+    (order) => order.orderStatus !== "cancelled"
+  )
+  .reduce(
+    (acc, order) => acc + order.totalAmount,
+    0
+  );
 
   const stats = [
     {
@@ -36,33 +47,34 @@ const OrderStats = ({ orders }) => {
       value: totalOrders,
       icon: ShoppingBag,
     },
-
     {
       title: "Pending",
       value: pendingOrders,
       icon: Clock3,
     },
-
     {
-      title: "Shipped",
-      value: shippedOrders,
+      title: "Processing",
+      value: processingOrders,
       icon: Truck,
     },
-
     {
       title: "Delivered",
       value: deliveredOrders,
       icon: CheckCircle2,
     },
+    {
+      title: "Revenue",
+      value: `₹${totalRevenue.toLocaleString()}`,
+      icon: IndianRupee
+    }
   ];
-
   return (
     <div
       className="
       grid
       grid-cols-1
       sm:grid-cols-2
-      xl:grid-cols-4
+      xl:grid-cols-5
       gap-6
       "
     >

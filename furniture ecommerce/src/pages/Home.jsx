@@ -10,10 +10,37 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Mousewheel } from "swiper/modules";
 import BlogCard from "../components/BlogCard";
 import { Autoplay } from "swiper/modules";
+import api from "../services/api";
 
 import "swiper/css";
 
 const Home = () => {
+    const [products, setProducts] =useState([]);
+
+   useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      const response =
+        await api.get("/products");
+
+      console.log(
+        "API RESPONSE:",
+        response.data
+      );
+
+      setProducts(
+        response.data.products
+      );
+    } catch (error) {
+      console.log(
+        "PRODUCT ERROR:",
+        error
+      );
+    }
+  };
+
+  fetchProducts();
+}, []);
 
     const FIVE_DAYS = 5 * 24 * 60 * 60 * 1000;
 
