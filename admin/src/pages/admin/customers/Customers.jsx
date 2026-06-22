@@ -1,7 +1,3 @@
-import { useState } from "react";
-
-import customersData from "../../../data/customersData";
-
 import PageHeader from "../../../components/common/PageHeader";
 import Pagination from "../../../components/common/Pagination";
 import EmptyState from "../../../components/common/EmptyState";
@@ -9,19 +5,40 @@ import EmptyState from "../../../components/common/EmptyState";
 import CustomerStats from "../../../components/customers/CustomerStats";
 import CustomerFilters from "../../../components/customers/CustomerFilters";
 import CustomerTable from "../../../components/customers/CustomerTable";
+import { useEffect, useState } from "react";
+import api from "../../../services/api";
 
 const Customers = () => {
-  const [search, setSearch] =
-    useState("");
+  const [customers, setCustomers] = useState([]);
 
-  const [status, setStatus] =
-    useState("");
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
 
-  const [currentPage, setCurrentPage] =
-    useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const [deleteModal, setDeleteModal] =
-    useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
+
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+
+  const fetchCustomers = async () => {
+    try {
+      const response =
+        await api.get(
+          "/customers"
+        );
+        console.log("CUSTOMERS:", response.data);
+      setCustomers(
+        response.data.customers
+      );
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [
     selectedCustomer,
@@ -31,34 +48,39 @@ const Customers = () => {
   const customersPerPage = 6;
 
   const filteredCustomers =
-    customersData.filter(
-      (customer) => {
-        const matchesSearch =
-          customer.name
-            .toLowerCase()
-            .includes(
-              search.toLowerCase()
-            ) ||
-          customer.email
-            .toLowerCase()
-            .includes(
-              search.toLowerCase()
-            );
+  customers.filter(
+    (customer) => {
+      const matchesSearch =
+        `${customer.firstName || ""} ${customer.lastName || ""}`
+          .toLowerCase()
+          .includes(
+            search.toLowerCase()
+          ) ||
+        customer.email
+          ?.toLowerCase()
+          .includes(
+            search.toLowerCase()
+          );
 
-        const matchesStatus =
-          !status ||
-          customer.status === status;
+      const matchesStatus =
+        !status ||
+        (status ===
+          "active" &&
+          customer.isActive) ||
+        (status ===
+          "inactive" &&
+          !customer.isActive);
 
-        return (
-          matchesSearch &&
-          matchesStatus
-        );
-      }
-    );
+      return (
+        matchesSearch &&
+        matchesStatus
+      );
+    }
+  );
 
   const totalPages = Math.ceil(
     filteredCustomers.length /
-      customersPerPage
+    customersPerPage
   );
 
   const startIndex =
@@ -69,7 +91,7 @@ const Customers = () => {
     filteredCustomers.slice(
       startIndex,
       startIndex +
-        customersPerPage
+      customersPerPage
     );
 
   return (
@@ -80,7 +102,7 @@ const Customers = () => {
       />
 
       <CustomerStats
-        customers={customersData}
+        customers={customers}
       />
 
       <CustomerFilters
@@ -91,7 +113,7 @@ const Customers = () => {
       />
 
       {filteredCustomers.length ===
-      0 ? (
+        0 ? (
         <EmptyState
           title="No Customers Found"
           description="Try changing filters or search term."
@@ -169,7 +191,7 @@ const Customers = () => {
               Are you sure you want
               to delete{" "}
               {
-                selectedCustomer?.name
+                `${selectedCustomer?.firstName}${selectedCustomer?.lastName}`
               }
               ?
             </p>

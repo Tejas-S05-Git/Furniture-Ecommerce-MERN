@@ -31,7 +31,10 @@ const Orders = () => {
       try {
         const response =
           await api.get("/orders");
-
+       console.log(
+      "ORDERS:",
+      response.data.orders
+    );
         setOrders(
           response.data.orders
         );

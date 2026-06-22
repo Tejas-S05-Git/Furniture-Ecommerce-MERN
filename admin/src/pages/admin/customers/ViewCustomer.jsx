@@ -8,19 +8,69 @@ import {
   IndianRupee,
 } from "lucide-react";
 
-import customersData from "../../../data/customersData";
 import StatusBadge from "../../../components/common/StatusBadge";
+import api from "../../../services/api";
+import { useEffect, useState } from "react";
 
 const ViewCustomer = () => {
   const { id } = useParams();
+  const [customer, setCustomer] =
+    useState(null);
 
+  const [orders, setOrders] =
+    useState([]);
+
+  const [totalOrders, setTotalOrders] =
+    useState(0);
+
+  const [totalSpent, setTotalSpent] =
+    useState(0);
+
+  const [loading, setLoading] =
+    useState(true);
   const navigate = useNavigate();
 
-  const customer =
-    customersData.find(
-      (item) =>
-        item.id === Number(id)
+  useEffect(() => {
+    fetchCustomer();
+  }, [id]);
+
+  const fetchCustomer =
+    async () => {
+      try {
+        const response =
+          await api.get(
+            `/customers/${id}`
+          );
+
+        setCustomer(
+          response.data.customer
+        );
+
+        setOrders(
+          response.data.orders
+        );
+
+        setTotalOrders(
+          response.data.totalOrders
+        );
+
+        setTotalSpent(
+          response.data.totalSpent
+        );
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  if (loading) {
+    return (
+      <div className="p-10">
+        Loading...
+      </div>
     );
+  }
 
   if (!customer) {
     return (
@@ -112,7 +162,10 @@ const ViewCustomer = () => {
             "
           >
             <img
-              src={customer.avatar}
+              src={
+                customer.avatar ||
+                `https://ui-avatars.com/api/?name=${customer.firstName}+${customer.lastName}`
+              }
               alt=""
               className="
               w-28
@@ -130,7 +183,9 @@ const ViewCustomer = () => {
               mt-4
               "
             >
-              {customer.name}
+              {customer.firstName}
+              {" "}
+              {customer.lastName}
             </h2>
 
             <p className="text-zinc-500 mt-1">
@@ -140,7 +195,9 @@ const ViewCustomer = () => {
             <div className="mt-4">
               <StatusBadge
                 status={
-                  customer.status
+                  customer.isActive
+                    ? "active"
+                    : "inactive"
                 }
               />
             </div>
@@ -180,9 +237,7 @@ const ViewCustomer = () => {
                     mt-2
                     "
                   >
-                    {
-                      customer.totalOrders
-                    }
+                    {totalOrders}
                   </h2>
                 </div>
 
@@ -216,10 +271,7 @@ const ViewCustomer = () => {
                     mt-2
                     "
                   >
-                    ₹
-                    {
-                      customer.totalSpent
-                    }
+                    ₹{totalSpent}
                   </h2>
                 </div>
 
@@ -279,7 +331,9 @@ const ViewCustomer = () => {
                 </p>
 
                 <h3 className="font-medium mt-1">
-                  {customer.name}
+                  {customer.firstName}
+                  {" "}
+                  {customer.lastName}
                 </h3>
               </div>
 
@@ -301,7 +355,7 @@ const ViewCustomer = () => {
 
                 <h3 className="font-medium mt-1 flex items-center gap-2">
                   <Phone size={16} />
-                  {customer.phone}
+                  {customer.phone || "N/A"}
                 </h3>
               </div>
 
@@ -311,9 +365,13 @@ const ViewCustomer = () => {
                 </p>
 
                 <h3 className="font-medium mt-1">
+
                   {
-                    customer.joinedAt
+                    new Date(
+                      customer.createdAt
+                    ).toLocaleDateString()
                   }
+
                 </h3>
               </div>
             </div>
@@ -348,9 +406,7 @@ const ViewCustomer = () => {
               />
 
               <p>
-                {
-                  customer.address
-                }
+                {customer.address || "No address added"}
               </p>
             </div>
           </div>
@@ -400,45 +456,45 @@ const ViewCustomer = () => {
                   </tr>
                 </thead>
 
-                <tbody>
-                  {customer.recentOrders?.map(
-                    (order) => (
-                      <tr
-                        key={
-                          order.id
-                        }
-                        className="border-b"
-                      >
-                        <td className="py-4">
-                          {
-                            order.id
-                          }
-                        </td>
+               <tbody>
+  {orders.length > 0 ? (
+    orders.map((order) => (
+      <tr
+        key={order._id}
+        className="border-b"
+      >
+        <td className="py-4">
+          #{order._id.slice(-8)}
+        </td>
 
-                        <td className="py-4">
-                          ₹
-                          {
-                            order.amount
-                          }
-                        </td>
+        <td className="py-4">
+          ₹{order.totalAmount}
+        </td>
 
-                        <td className="py-4">
-                          <StatusBadge
-                            status={
-                              order.status
-                            }
-                          />
-                        </td>
+        <td className="py-4">
+          <StatusBadge
+            status={order.orderStatus}
+          />
+        </td>
 
-                        <td className="py-4">
-                          {
-                            order.date
-                          }
-                        </td>
-                      </tr>
-                    )
-                  )}
-                </tbody>
+        <td className="py-4">
+          {new Date(
+            order.createdAt
+          ).toLocaleDateString()}
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td
+        colSpan="4"
+        className="py-8 text-center text-zinc-500"
+      >
+        No Orders Found
+      </td>
+    </tr>
+  )}
+</tbody>
 
               </table>
 

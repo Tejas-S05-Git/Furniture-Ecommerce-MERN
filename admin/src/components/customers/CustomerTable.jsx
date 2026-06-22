@@ -13,7 +13,7 @@ const CustomerTable = ({
   setDeleteModal,
   setSelectedCustomer,
 }) => {
-  const navigate =useNavigate();
+  const navigate = useNavigate();
 
   const columns = [
     "Customer",
@@ -31,7 +31,7 @@ const CustomerTable = ({
       data={customers}
       renderRow={(customer) => (
         <tr
-          key={customer.id}
+          key={customer._id}
           className="
           border-b
           border-zinc-100
@@ -43,20 +43,14 @@ const CustomerTable = ({
 
           <td className="px-6 py-4 min-w-[260px]">
             <div className="flex items-center gap-4">
-              <img
-                src={
-                  customer.avatar
-                }
-                alt={
-                  customer.name
-                }
-                className="
-                w-12
-                h-12
-                rounded-full
-                object-cover
-                "
-              />
+             <img
+  src={
+    customer.avatar ||
+    "https://ui-avatars.com/api/?name=" +
+      customer.firstName
+  }
+  alt={customer.firstName}
+/>
 
               <div>
                 <h3
@@ -66,7 +60,7 @@ const CustomerTable = ({
                   "
                 >
                   {
-                    customer.name
+                    `${customer.firstName} ${customer.lastName}`
                   }
                 </h3>
 
@@ -87,9 +81,7 @@ const CustomerTable = ({
           {/* Phone */}
 
           <td className="px-6 py-4">
-            {
-              customer.phone
-            }
+            {customer.phone || "N/A"}
           </td>
 
           {/* Orders */}
@@ -118,7 +110,9 @@ const CustomerTable = ({
           <td className="px-6 py-4">
             <StatusBadge
               status={
-                customer.status
+                customer.isActive
+                  ? "active"
+                  : "inactive"
               }
             />
           </td>
@@ -127,7 +121,9 @@ const CustomerTable = ({
 
           <td className="px-6 py-4">
             {
-              customer.joinedAt
+              new Date(
+                customer.createdAt
+              ).toLocaleDateString()
             }
           </td>
 
@@ -153,7 +149,7 @@ const CustomerTable = ({
                 "
                 onClick={() =>
                   navigate(
-                    `/admin/customers/view/${customer.id}`
+                    `/admin/customers/view/${customer._id}`
                   )
                 }
               >

@@ -62,15 +62,11 @@ const CustomerFilters = ({
             All Customers
           </option>
 
-          <option value="Active">
+          <option value="active">
             Active
           </option>
 
-          <option value="VIP">
-            VIP
-          </option>
-
-          <option value="Inactive">
+          <option value="inactive">
             Inactive
           </option>
         </select>

@@ -14,8 +14,7 @@ const CustomerStats = ({
   const activeCustomers =
     customers.filter(
       (customer) =>
-        customer.status ===
-        "Active"
+        customer.isActive === true
     ).length;
 
   const vipCustomers =
@@ -29,9 +28,7 @@ const CustomerStats = ({
     customers.filter(
       (customer) => {
         const joinDate =
-          new Date(
-            customer.joinedAt
-          );
+          new Date(customer.createdAt);
 
         const today =
           new Date();
@@ -52,38 +49,22 @@ const CustomerStats = ({
 
   const stats = [
     {
-      title:
-        "Total Customers",
-      value:
-        totalCustomers,
+      title: "Total Customers",
+      value: totalCustomers,
       icon: Users,
     },
-
     {
-      title:
-        "Active Customers",
-      value:
-        activeCustomers,
+      title: "Active Customers",
+      value: activeCustomers,
       icon: UserCheck,
     },
-
+   
     {
-      title:
-        "VIP Customers",
-      value:
-        vipCustomers,
-      icon: Crown,
-    },
-
-    {
-      title:
-        "New Customers",
-      value:
-        newCustomers,
+      title: "New Customers",
+      value: newCustomers,
       icon: UserPlus,
     },
   ];
-
   return (
     <div
       className="
