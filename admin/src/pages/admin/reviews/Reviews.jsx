@@ -1,4 +1,3 @@
-import { useState } from "react";
 
 import PageHeader from "../../../components/common/PageHeader";
 import Pagination from "../../../components/common/Pagination";
@@ -8,45 +7,66 @@ import DeleteModal from "../../../components/common/DeleteModal";
 import ReviewStats from "../../../components/reviews/ReviewStats";
 import ReviewFilters from "../../../components/reviews/ReviewFilters";
 import ReviewTable from "../../../components/reviews/ReviewTable";
-
-import reviewsData from "../../../data/reviewsData";
+import { useEffect, useState } from "react";
+import api from "../../../services/api";
+import toast from "react-hot-toast";
 
 const Reviews = () => {
-  const [reviews, setReviews] =
-    useState(reviewsData);
 
-  const [search, setSearch] =
-    useState("");
+  const [reviews, setReviews] = useState([]);
 
-  const [rating, setRating] =
-    useState("");
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
-  const [status, setStatus] =
-    useState("");
+  const [rating, setRating] = useState("");
 
-  const [deleteModal, setDeleteModal] =
-    useState(false);
+  const [status, setStatus] = useState("");
 
-  const [selectedReview, setSelectedReview] =
-    useState(null);
+  const [deleteModal, setDeleteModal] = useState(false);
 
-  const [currentPage, setCurrentPage] =
-    useState(1);
+  const [selectedReview, setSelectedReview] = useState(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
 
   const itemsPerPage = 5;
+
+  const fetchReviews = async () => {
+    try {
+      const response =
+        await api.get("/reviews");
+
+      setReviews(
+        response.data.reviews
+      );
+    } catch (error) {
+      console.log(error);
+
+      toast.error(
+        "Failed to load reviews"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviews();
+  }, []);
 
   /* Filters */
 
   const filteredReviews =
     reviews.filter((review) => {
       const matchesSearch =
-        review.customer.name
+        `${review.customer?.firstName || ""}
+   ${review.customer?.lastName || ""}`
           .toLowerCase()
           .includes(
             search.toLowerCase()
           ) ||
-        review.product.title
-          .toLowerCase()
+
+        review.product?.title
+          ?.toLowerCase()
           .includes(
             search.toLowerCase()
           );
@@ -54,12 +74,15 @@ const Reviews = () => {
       const matchesRating =
         !rating ||
         review.rating ===
-          Number(rating);
+        Number(rating);
 
       const matchesStatus =
         !status ||
-        review.status ===
-          status;
+        (status === "approved"
+          ? review.approved === true
+          : status === "pending"
+            ? review.approved === false
+            : true)
 
       return (
         matchesSearch &&
@@ -73,7 +96,7 @@ const Reviews = () => {
   const totalPages =
     Math.ceil(
       filteredReviews.length /
-        itemsPerPage
+      itemsPerPage
     );
 
   const startIndex =
@@ -84,42 +107,48 @@ const Reviews = () => {
     filteredReviews.slice(
       startIndex,
       startIndex +
-        itemsPerPage
+      itemsPerPage
     );
 
   /* Actions */
 
-  const handleApprove = (
-    id
-  ) => {
-    setReviews(
-      reviews.map((review) =>
-        review.id === id
-          ? {
-              ...review,
-              status:
-                "Approved",
-            }
-          : review
-      )
-    );
-  };
+  const handleApprove =
+    async (id) => {
+      try {
+        await api.patch(
+          `/reviews/${id}/approve`
+        );
 
-  const handleReject = (
-    id
-  ) => {
-    setReviews(
-      reviews.map((review) =>
-        review.id === id
-          ? {
-              ...review,
-              status:
-                "Rejected",
-            }
-          : review
-      )
-    );
-  };
+        toast.success(
+          "Review Updated"
+        );
+
+        fetchReviews();
+      } catch (error) {
+        toast.error(
+          "Failed to update review"
+        );
+      }
+    };
+
+  const handleReject =
+    async (id) => {
+      try {
+        await api.patch(
+          `/reviews/${id}/approve`
+        );
+
+        toast.success(
+          "Review Updated"
+        );
+
+        fetchReviews();
+      } catch (error) {
+        toast.error(
+          "Failed to update review"
+        );
+      }
+    };
 
   return (
     <div className="space-y-8">
@@ -151,7 +180,7 @@ const Reviews = () => {
       {/* Table */}
 
       {filteredReviews.length ===
-      0 ? (
+        0 ? (
         <EmptyState
           title="No Reviews Found"
           description="Try changing your filters."
@@ -199,7 +228,7 @@ const Reviews = () => {
               -
               {Math.min(
                 startIndex +
-                  itemsPerPage,
+                itemsPerPage,
                 filteredReviews.length
               )}{" "}
               of{" "}
@@ -232,17 +261,25 @@ const Reviews = () => {
           setDeleteModal(false)
         }
         title="Delete Review"
-        onDelete={() => {
-          setReviews(
-            reviews.filter(
-              (review) =>
-                review.id !==
-                selectedReview.id
-            )
-          );
+       onDelete={async () => {
+  try {
+    await api.delete(
+      `/reviews/${selectedReview._id}`
+    );
 
-          setDeleteModal(false);
-        }}
+    toast.success(
+      "Review Deleted"
+    );
+
+    fetchReviews();
+
+    setDeleteModal(false);
+  } catch (error) {
+    toast.error(
+      "Delete Failed"
+    );
+  }
+}}
       />
     </div>
   );

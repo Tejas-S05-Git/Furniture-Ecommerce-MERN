@@ -134,6 +134,15 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    rating: {
+      type: Number,
+      default: 0,
+    },
+
+    totalReviews: {
+      type: Number,
+      default: 0,
+    },
 
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -142,10 +151,7 @@ const productSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-module.exports = mongoose.model(
-  "Product",
-  productSchema
-);
+module.exports = mongoose.model("Product", productSchema);

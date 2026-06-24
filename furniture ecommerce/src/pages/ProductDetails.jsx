@@ -8,19 +8,19 @@ import FeaturesSection from '../components/FeaturesSection'
 const ProductDetails = () => {
   return (
     <>
-       <HeroPage
-       title="Product Details"
+      <HeroPage
+        title="Product Details"
         breadcrumbs={[
           { label: "Home", path: "/" },
           { label: "Shop", path: "/shop" },
           { label: "Product Details" },
         ]}
-       />
+      />
 
-       <ProductDetailsSection/>
-       <ProductTabs/>
-       <RelatedProducts/>
-       <FeaturesSection/>
+      <ProductDetailsSection />
+      <ProductTabs />
+      <RelatedProducts />
+      <FeaturesSection />
     </>
   )
 }

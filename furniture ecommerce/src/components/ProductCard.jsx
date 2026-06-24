@@ -9,7 +9,7 @@ const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
   const navigate = useNavigate();
   return (
-   <Link to={`/product/${product._id}`}>
+    <Link to={`/product/${product._id}`}>
       <div
         className="group h-full flex flex-col"
         data-aos="fade-up"
@@ -27,14 +27,14 @@ const ProductCard = ({ product }) => {
           {/* Icons */}
           <div className="absolute top-5 right-5 flex flex-col gap-3 z-10 opacity-0 translate-x-8 group-hover:opacity-100 group-hover:translate-x-0 duration-500">
             <button
-  onClick={(e) => {
-    e.preventDefault();
-    addToWishlist(product);
-  }}
-  className="w-11 h-11 rounded-full bg-white flex items-center justify-center text-xl shadow-md hover:bg-primary hover:text-white transition-all duration-300"
->
-  <i className="ri-heart-line"></i>
-</button>
+              onClick={(e) => {
+                e.preventDefault();
+                addToWishlist(product);
+              }}
+              className="w-11 h-11 rounded-full bg-white flex items-center justify-center text-xl shadow-md hover:bg-primary hover:text-white transition-all duration-300"
+            >
+              <i className="ri-heart-line"></i>
+            </button>
 
             <button className="w-11 h-11 rounded-full bg-white flex items-center justify-center text-xl shadow-md hover:bg-primary hover:text-white transition-all duration-300">
               <i className="ri-eye-line"></i>
@@ -44,7 +44,7 @@ const ProductCard = ({ product }) => {
               onClick={(e) => {
                 e.preventDefault();
                 addToCart(product, 1);
-                
+
                 navigate("/cart");
               }}
               className="w-11 h-11 rounded-full bg-white flex items-center justify-center text-xl shadow-md hover:bg-primary hover:text-white transition-all duration-300"
@@ -56,9 +56,9 @@ const ProductCard = ({ product }) => {
           {/* Image */}
           <img
             src={
-  product.thumbnail ||
-  product.images?.[0]
-}
+              product.thumbnail ||
+              product.images?.[0]
+            }
             alt={product.title}
             loading="lazy"
             decoding="async"
@@ -73,7 +73,16 @@ const ProductCard = ({ product }) => {
 
             <div className="flex items-center gap-2">
               <i className="ri-star-fill text-accent"></i>
-              <span className="font-semibold">{product.rating || 0}</span>
+
+              <span className="font-semibold">
+                {product.rating
+                  ? product.rating.toFixed(1)
+                  : "0.0"}
+              </span>
+
+              <span className="text-zinc-500 text-sm">
+                ({product.totalReviews || 0})
+              </span>
             </div>
           </div>
 

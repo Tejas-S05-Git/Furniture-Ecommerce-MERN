@@ -1,6 +1,7 @@
 const Review = require("../models/Review.model");
 
 const Product = require("../models/Product.model");
+
 const createReview = async (req, res) => {
   try {
     const { productId, rating, title, comment } = req.body;
@@ -41,59 +42,17 @@ const createReview = async (req, res) => {
   }
 };
 
-const getProductReviews =
-  async (req, res) => {
-    try {
-      const reviews =
-        await Review.find({
-          product:
-            req.params.productId,
-
-          approved: true,
-        })
-          .populate(
-            "customer",
-            "firstName lastName"
-          )
-          .sort({
-            createdAt: -1,
-          });
-
-      res.status(200).json({
-        success: true,
-        count:
-          reviews.length,
-        reviews,
-      });
-    } catch (error) {
-      console.log(error);
-
-      res.status(500).json({
-        success: false,
-        message:
-          "Server Error",
-      });
-    }
-  };
-
-  const getAllReviews = async (
-  req,
-  res
-) => {
+const getProductReviews = async (req, res) => {
   try {
-    const reviews =
-      await Review.find()
-        .populate(
-          "customer",
-          "firstName lastName email"
-        )
-        .populate(
-          "product",
-          "title"
-        )
-        .sort({
-          createdAt: -1,
-        });
+    const reviews = await Review.find({
+      product: req.params.productId,
+
+      approved: true,
+    })
+      .populate("customer", "firstName lastName")
+      .sort({
+        createdAt: -1,
+      });
 
     res.status(200).json({
       success: true,
@@ -105,41 +64,85 @@ const getProductReviews =
 
     res.status(500).json({
       success: false,
-      message:
-        "Server Error",
+      message: "Server Error",
     });
   }
 };
 
-const approveReview = async (
-  req,
-  res
-) => {
+const getAllReviews = async (req, res) => {
   try {
-    const review =
-      await Review.findById(
-        req.params.id
-      );
+    const reviews = await Review.find()
+      .populate("customer", "firstName lastName email")
+      .populate("product", "title thumbnail")
+      .sort({
+        createdAt: -1,
+      });
+
+    res.status(200).json({
+      success: true,
+      count: reviews.length,
+      reviews,
+    });
+  } catch (error) {
+    console.log(error);
+
+    console.log(
+  JSON.stringify(
+    reviews[0],
+    null,
+    2
+  )
+);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+const approveReview = async (req, res) => {
+  try {
+    const review = await Review.findById(req.params.id);
 
     if (!review) {
       return res.status(404).json({
         success: false,
-        message:
-          "Review not found",
+        message: "Review not found",
       });
     }
 
-    review.approved =
-      !review.approved;
+    review.approved = !review.approved;
 
     await review.save();
+    const reviews = await Review.find({
+  product: review.product,
+  approved: true,
+});
+
+const totalReviews =
+  reviews.length;
+
+const rating =
+  totalReviews > 0
+    ? reviews.reduce(
+        (acc, item) =>
+          acc + item.rating,
+        0
+      ) / totalReviews
+    : 0;
+
+await Product.findByIdAndUpdate(
+  review.product,
+  {
+    rating,
+    totalReviews,
+  }
+);
 
     res.status(200).json({
       success: true,
-      message:
-        review.approved
-          ? "Review Approved"
-          : "Review Unapproved",
+      message: review.approved ? "Review Approved" : "Review Unapproved",
       review,
     });
   } catch (error) {
@@ -147,27 +150,19 @@ const approveReview = async (
 
     res.status(500).json({
       success: false,
-      message:
-        "Server Error",
+      message: "Server Error",
     });
   }
 };
 
-const deleteReview = async (
-  req,
-  res
-) => {
+const deleteReview = async (req, res) => {
   try {
-    const review =
-      await Review.findById(
-        req.params.id
-      );
+    const review = await Review.findById(req.params.id);
 
     if (!review) {
       return res.status(404).json({
         success: false,
-        message:
-          "Review not found",
+        message: "Review not found",
       });
     }
 
@@ -175,20 +170,17 @@ const deleteReview = async (
 
     res.status(200).json({
       success: true,
-      message:
-        "Review deleted successfully",
+      message: "Review deleted successfully",
     });
   } catch (error) {
     console.log(error);
 
     res.status(500).json({
       success: false,
-      message:
-        "Server Error",
+      message: "Server Error",
     });
   }
 };
-
 
 module.exports = {
   createReview,

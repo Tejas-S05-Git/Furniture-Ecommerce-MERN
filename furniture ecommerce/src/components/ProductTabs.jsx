@@ -1,16 +1,165 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { products } from "../data/products";
-
+import api from "../services/api";
+import { useEffect } from "react";
+import toast from "react-hot-toast";
 const ProductTabs = () => {
   const { id } = useParams();
+  const [product, setProduct] = useState(null);
 
-  const product = products.find(
-    (item) => item.id === Number(id)
-  );
+  const [reviews, setReviews] = useState([]);
+
+  const [rating, setRating] = useState(5);
+
+  const [comment, setComment] = useState("");
+
+  const [loading, setLoading] = useState(true);
+  const [title, setTitle] = useState("");
+  const fetchProduct = async () => {
+    try {
+      const response =
+        await api.get(
+          `/products/${id}`
+        );
+
+      setProduct(
+        response.data.product
+      );
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchReviews =
+    async () => {
+      try {
+        const response =
+          await api.get(
+            `/reviews/product/${id}`
+          );
+
+        setReviews(
+          response.data.reviews
+        );
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  useEffect(() => {
+    fetchProduct();
+  }, [id]);
+
+  useEffect(() => {
+    if (product?._id) {
+      fetchReviews();
+    }
+  }, [product]);
+
+  const handleReviewSubmit =
+
+  
+    async (e) => {
+      e.preventDefault();
+
+      try {
+        await api.post(
+          "/reviews",
+          {
+            productId: product._id,
+            rating,
+            comment,
+            title,
+          }
+        );
+
+        toast.success(
+          "Review Submitted Successfully"
+        );
+
+        setRating(5);
+        setComment("");
+        setTitle("");
+
+        fetchReviews();
+      } catch (error) {
+        toast.error(
+          error.response?.data
+            ?.message ||
+          "Failed to submit review"
+        );
+      }
+    };
+  const averageRating =
+    reviews.length > 0
+      ? (
+        reviews.reduce(
+          (acc, review) =>
+            acc + review.rating,
+          0
+        ) / reviews.length
+      ).toFixed(1)
+      : 0;
 
   const [activeTab, setActiveTab] = useState("description");
 
+
+  const totalReviews =
+    reviews.length;
+
+  const fiveStar =
+    reviews.filter(
+      (review) =>
+        review.rating === 5
+    ).length;
+
+  const fourStar =
+    reviews.filter(
+      (review) =>
+        review.rating === 4
+    ).length;
+
+  const threeStar =
+    reviews.filter(
+      (review) =>
+        review.rating === 3
+    ).length;
+
+  const twoStar =
+    reviews.filter(
+      (review) =>
+        review.rating === 2
+    ).length;
+
+  const oneStar =
+    reviews.filter(
+      (review) =>
+        review.rating === 1
+    ).length;
+
+  const getPercentage = (
+    count
+  ) =>
+    totalReviews > 0
+      ? (
+        (count /
+          totalReviews) *
+        100
+      ).toFixed(0)
+      : 0;
+
+
+  if (loading) {
+    return (
+      <div className="py-20 text-center">
+        Loading...
+      </div>
+    );
+  }
   if (!product) return null;
 
   return (
@@ -27,11 +176,10 @@ const ProductTabs = () => {
 
             <button
               onClick={() => setActiveTab("description")}
-              className={`relative pb-6 whitespace-nowrap text-[18px] sm:text-[24px] lg:text-[32px] font-bold transition-all duration-300 ${
-                activeTab === "description"
-                  ? "text-primary"
-                  : "text-zinc-400 hover:text-primary"
-              }`}
+              className={`relative pb-6 whitespace-nowrap text-[18px] sm:text-[24px] lg:text-[32px] font-bold transition-all duration-300 ${activeTab === "description"
+                ? "text-primary"
+                : "text-zinc-400 hover:text-primary"
+                }`}
             >
               Description
 
@@ -42,11 +190,10 @@ const ProductTabs = () => {
 
             <button
               onClick={() => setActiveTab("additional")}
-              className={`relative pb-6 whitespace-nowrap text-[18px] sm:text-[24px] lg:text-[32px] font-bold transition-all duration-300 ${
-                activeTab === "additional"
-                  ? "text-primary"
-                  : "text-zinc-400 hover:text-primary"
-              }`}
+              className={`relative pb-6 whitespace-nowrap text-[18px] sm:text-[24px] lg:text-[32px] font-bold transition-all duration-300 ${activeTab === "additional"
+                ? "text-primary"
+                : "text-zinc-400 hover:text-primary"
+                }`}
             >
               Additional Information
 
@@ -57,11 +204,10 @@ const ProductTabs = () => {
 
             <button
               onClick={() => setActiveTab("review")}
-              className={`relative pb-6 whitespace-nowrap text-[18px] sm:text-[24px] lg:text-[32px] font-bold transition-all duration-300 ${
-                activeTab === "review"
-                  ? "text-primary"
-                  : "text-zinc-400 hover:text-primary"
-              }`}
+              className={`relative pb-6 whitespace-nowrap text-[18px] sm:text-[24px] lg:text-[32px] font-bold transition-all duration-300 ${activeTab === "review"
+                ? "text-primary"
+                : "text-zinc-400 hover:text-primary"
+                }`}
             >
               Review
 
@@ -123,20 +269,40 @@ const ProductTabs = () => {
                 <tbody>
                   {Object.entries(
                     product.additionalInformation || {}
-                  ).map(([key, value], index) => (
-                    <tr
-                      key={index}
-                      className="border-t border-zinc-200"
-                    >
-                      <td className="py-5 px-6 md:px-8 font-semibold capitalize">
-                        {key.replace(/([A-Z])/g, " $1")}
-                      </td>
+                  ).length > 0 ? (
+                    Object.entries(
+                      product.additionalInformation
+                    ).map(([key, value], index) => (
+                      <tr
+                        key={index}
+                        className="border-t border-zinc-200"
+                      >
+                        <td className="py-5 px-6 md:px-8 font-semibold capitalize">
+                          {key.replace(
+                            /([A-Z])/g,
+                            " $1"
+                          )}
+                        </td>
 
-                      <td className="py-5 px-6 md:px-8 text-zinc-600">
-                        {value}
+                        <td className="py-5 px-6 md:px-8 text-zinc-600">
+                          {value || "N/A"}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={2}
+                        className="
+        py-10
+        text-center
+        text-zinc-500
+        "
+                      >
+                        No Additional Information Available
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
@@ -148,7 +314,8 @@ const ProductTabs = () => {
 
               <div className="flex flex-col items-center justify-center xl:border-r border-zinc-200">
                 <h2 className="text-5xl lg:text-6xl font-bold">
-                  {product.rating}
+                  {averageRating}
+
                 </h2>
 
                 <p className="mt-2 text-zinc-500">
@@ -165,44 +332,228 @@ const ProductTabs = () => {
                 </div>
 
                 <p className="mt-3 text-zinc-500">
-                  Based on {product.totalReviews} reviews
+                  Based on {reviews.length} reviews
                 </p>
               </div>
 
               <div className="space-y-6">
 
-                <div className="flex items-center gap-5">
-                  <span className="w-[70px] text-zinc-600">
-                    5 Star
-                  </span>
+                {[
+                  {
+                    star: 5,
+                    count: fiveStar,
+                  },
+                  {
+                    star: 4,
+                    count: fourStar,
+                  },
+                  {
+                    star: 3,
+                    count: threeStar,
+                  },
+                  {
+                    star: 2,
+                    count: twoStar,
+                  },
+                  {
+                    star: 1,
+                    count: oneStar,
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.star}
+                    className="
+    flex
+    items-center
+    gap-5
+    "
+                  >
+                    <span className="w-[70px] text-zinc-600">
+                      {item.star} Star
+                    </span>
 
-                  <div className="flex-1 h-2 rounded-full bg-zinc-200 overflow-hidden">
-                    <div className="w-[82%] h-full bg-accent rounded-full"></div>
+                    <div
+                      className="
+      flex-1
+      h-2
+      rounded-full
+      bg-zinc-200
+      overflow-hidden
+      "
+                    >
+                      <div
+                        className="
+        h-full
+        bg-accent
+        rounded-full
+        transition-all
+        duration-500
+        "
+                        style={{
+                          width: `${getPercentage(
+                            item.count
+                          )}%`,
+                        }}
+                      />
+                    </div>
+
+                    <span
+                      className="
+      w-12
+      text-sm
+      text-zinc-500
+      "
+                    >
+                      {item.count}
+                    </span>
                   </div>
+                ))}
+
+                <div className="mt-12 space-y-5">
+                  {reviews.length === 0 ? (
+                    <div className="text-center py-10">
+                      No Reviews Yet
+                    </div>
+                  ) : (
+                    reviews.map((review) => (
+                      <div
+                        key={review._id}
+                        className="
+        bg-secondary
+        rounded-3xl
+        p-6
+        border
+        border-zinc-100
+        "
+                      >
+                        <div className="flex justify-between">
+                          <div>
+                            <h4 className="font-semibold">
+                              {review.customer?.firstName}
+                              {" "}
+                              {review.customer?.lastName}
+                            </h4>
+
+                            <p className="text-sm text-zinc-500">
+                              {new Date(
+                                review.createdAt
+                              ).toLocaleDateString()}
+                            </p>
+                          </div>
+
+                          <div className="text-accent">
+                            {"⭐".repeat(
+                              review.rating
+                            )}
+                          </div>
+                        </div>
+
+                        <h5 className="font-semibold mt-3">
+                          {review.title}
+                        </h5>
+
+                        <p className="mt-2 text-zinc-600">
+                          {review.comment}
+                        </p>
+                      </div>
+                    ))
+                  )}
                 </div>
 
-                <div className="flex items-center gap-5">
-                  <span className="w-[70px] text-zinc-600">
-                    4 Star
-                  </span>
+                <form
+                  onSubmit={handleReviewSubmit}
+                  className="
+  mt-12
+  bg-secondary
+  rounded-3xl
+  p-8
+  space-y-5
+  "
+                >
+                  <h3 className="text-2xl font-bold">
+                    Write A Review
+                  </h3>
 
-                  <div className="flex-1 h-2 rounded-full bg-zinc-200 overflow-hidden">
-                    <div className="w-[55%] h-full bg-accent rounded-full"></div>
-                  </div>
-                </div>
+                  <select
+                    value={rating}
+                    onChange={(e) =>
+                      setRating(
+                        Number(
+                          e.target.value
+                        )
+                      )
+                    }
+                    className="border rounded-xl px-4 py-3"
+                  >
+                    <option value="5">
+                      5 Star
+                    </option>
+                    <option value="4">
+                      4 Star
+                    </option>
+                    <option value="3">
+                      3 Star
+                    </option>
+                    <option value="2">
+                      2 Star
+                    </option>
+                    <option value="1">
+                      1 Star
+                    </option>
+                  </select>
 
-                <div className="flex items-center gap-5">
-                  <span className="w-[70px] text-zinc-600">
-                    3 Star
-                  </span>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) =>
+                      setTitle(e.target.value)
+                    }
+                    placeholder="Review Title"
+                    className="
+  w-full
+  h-14
+  px-5
+  border
+  border-zinc-200
+  rounded-2xl
+  outline-none
+  "
+                  />
 
-                  <div className="flex-1 h-2 rounded-full bg-zinc-200 overflow-hidden">
-                    <div className="w-[30%] h-full bg-accent rounded-full"></div>
-                  </div>
-                </div>
+                  <textarea
+                    value={comment}
+                    onChange={(e) =>
+                      setComment(
+                        e.target.value
+                      )
+                    }
+                    rows="5"
+                    placeholder="Write your review..."
+                    className="w-full border rounded-2xl p-4"
+                  />
+
+                  <button
+                    type="submit"
+                    className="
+  bg-primary
+  text-white
+  h-14
+  px-10
+  rounded-full
+  font-semibold
+  hover:opacity-90
+  transition-all
+  "
+                  >
+                    Submit Review
+                  </button>
+                </form>
 
               </div>
+
+
             </div>
+
           )}
 
         </div>

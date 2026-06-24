@@ -36,7 +36,7 @@ const ReviewTable = ({
       data={reviews}
       renderRow={(review) => (
         <tr
-          key={review.id}
+          key={review._id}
           className="
           border-b
           border-zinc-100
@@ -51,15 +51,16 @@ const ReviewTable = ({
 
               <img
                 src={
-                  review.product.image
+                  review.product?.thumbnail ||
+                  "/images/no-image.png"
                 }
                 alt=""
                 className="
-                w-14
-                h-14
-                rounded-xl
-                object-cover
-                "
+  w-14
+  h-14
+  rounded-xl
+  object-cover
+  "
               />
 
               <div>
@@ -83,7 +84,8 @@ const ReviewTable = ({
                   Product ID:
                   {" "}
                   {
-                    review.product.id
+                    review.product?._id
+                      ?.slice(-8)
                   }
                 </p>
               </div>
@@ -96,22 +98,26 @@ const ReviewTable = ({
           <td className="px-6 py-4 min-w-[220px]">
             <div className="flex items-center gap-3">
 
-              <img
-                src={
-                  review.customer.avatar
-                }
-                alt=""
+              <div
                 className="
-                w-10
-                h-10
-                rounded-full
-                object-cover
-                "
-              />
+  w-10
+  h-10
+  rounded-full
+  bg-primary
+  text-white
+  flex
+  items-center
+  justify-center
+  font-semibold
+  "
+              >
+                {review.customer?.firstName?.charAt(0)}
+              </div>
 
               <span className="font-medium">
                 {
-                  review.customer.name
+                  `${review.customer?.firstName}
+ ${review.customer?.lastName}`
                 }
               </span>
 
@@ -146,7 +152,7 @@ const ReviewTable = ({
               "
             >
               {
-                review.review
+                review.comment
               }
             </p>
           </td>
@@ -156,7 +162,9 @@ const ReviewTable = ({
           <td className="px-6 py-4">
             <StatusBadge
               status={
-                review.status
+                review.approved
+                  ? "approved"
+                  : "pending"
               }
             />
           </td>
@@ -164,7 +172,9 @@ const ReviewTable = ({
           {/* Date */}
 
           <td className="px-6 py-4 whitespace-nowrap">
-            {review.date}
+            {new Date(
+              review.createdAt
+            ).toLocaleDateString()}
           </td>
 
           {/* Actions */}
@@ -189,7 +199,7 @@ const ReviewTable = ({
                 "
                 onClick={() =>
                   navigate(
-                    `/admin/reviews/view/${review.id}`
+                    `/admin/reviews/view/${review._id}`
                   )
                 }
               >
@@ -211,7 +221,7 @@ const ReviewTable = ({
                 "
                 onClick={() =>
                   handleApprove(
-                    review.id
+                    review._id
                   )
                 }
               >
@@ -233,7 +243,7 @@ const ReviewTable = ({
                 "
                 onClick={() =>
                   handleReject(
-                    review.id
+                    review._id
                   )
                 }
               >
