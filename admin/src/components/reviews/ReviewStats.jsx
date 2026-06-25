@@ -13,29 +13,29 @@ const ReviewStats = ({
 
   const approvedReviews =
     reviews.filter(
-      (review) =>
-        review.status ===
-        "Approved"
+      (review) => review.approved
     ).length;
 
   const pendingReviews =
-    reviews.filter(
-      (review) =>
-        review.status ===
-        "Pending"
-    ).length;
+  reviews.filter(
+    (review) => !review.approved
+  ).length;
 
-  const averageRating =
-    reviews.length > 0
-      ? (
-          reviews.reduce(
-            (total, review) =>
-              total +
-              review.rating,
-            0
-          ) / reviews.length
-        ).toFixed(1)
-      : 0;
+  const approvedData =
+  reviews.filter(
+    (review) => review.approved
+  );
+
+const averageRating =
+  approvedData.length > 0
+    ? (
+        approvedData.reduce(
+          (total, review) =>
+            total + review.rating,
+          0
+        ) / approvedData.length
+      ).toFixed(1)
+    : "0.0";
 
   const stats = [
     {
@@ -65,8 +65,7 @@ const ReviewStats = ({
     {
       title:
         "Average Rating",
-      value:
-        averageRating,
+      value: `${averageRating} ⭐`,
       icon: Star,
     },
   ];

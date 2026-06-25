@@ -101,6 +101,39 @@ const getAllReviews = async (req, res) => {
   }
 };
 
+const getReviewById = async (req, res) => {
+  try {
+    const review = await Review.findById(req.params.id)
+      .populate(
+        "customer",
+        "firstName lastName email"
+      )
+      .populate(
+        "product",
+        "title thumbnail"
+      );
+
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        message: "Review not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      review,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
 const approveReview = async (req, res) => {
   try {
     const review = await Review.findById(req.params.id);
@@ -188,4 +221,5 @@ module.exports = {
   getAllReviews,
   approveReview,
   deleteReview,
+  getReviewById,
 };

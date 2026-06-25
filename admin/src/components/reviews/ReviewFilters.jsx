@@ -110,15 +110,15 @@ const ReviewFilters = ({
             All Status
           </option>
 
-          <option value="Approved">
+          <option value="approved">
             Approved
           </option>
 
-          <option value="Pending">
+          <option value="pending">
             Pending
           </option>
 
-          <option value="Rejected">
+          <option value="rejected">
             Rejected
           </option>
         </select>

@@ -8,6 +8,7 @@ const {
   getAllReviews,
   approveReview,
   deleteReview,
+  getReviewById,
 } = require("../controllers/review.controller");
 
 const protect = require("../middleware/auth.middleware");
@@ -15,12 +16,18 @@ const protect = require("../middleware/auth.middleware");
 const authorize = require("../middleware/role.middleware");
 
 router.post("/", protect, createReview);
+router.get("/:id", protect, authorize("admin", "super_admin"), getReviewById);
 
 router.get("/product/:productId", getProductReviews);
 
 router.get("/", protect, authorize("admin", "super_admin"), getAllReviews);
 
-router.patch("/:id/approve",protect,authorize("admin", "super_admin"),approveReview,);
+router.patch(
+  "/:id/approve",
+  protect,
+  authorize("admin", "super_admin"),
+  approveReview,
+);
 
 router.delete("/:id", protect, authorize("admin", "super_admin"), deleteReview);
 

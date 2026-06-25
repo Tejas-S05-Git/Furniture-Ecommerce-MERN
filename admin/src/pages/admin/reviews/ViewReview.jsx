@@ -10,39 +10,70 @@ import {
   XCircle,
   Trash2,
 } from "lucide-react";
-
 import toast from "react-hot-toast";
-
-import reviewsData from "../../../data/reviewsData";
 import StatusBadge from "../../../components/common/StatusBadge";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import api from "../../../services/api";
 
 const ViewReview = () => {
-    
+
   const { id } = useParams();
 
   const navigate = useNavigate();
 
-  const review = reviewsData.find(
-    (item) =>
-      item.id === Number(id)
-  );
+  const [review, setReview] = useState(null);
 
-  if (!review) {
+
+  const [loading, setLoading] = useState(true);
+
+  const [reviewStatus, setReviewStatus] =
+    useState("");
+
+  useEffect(() => {
+    if (review) {
+      setReviewStatus(
+        review.approved
+          ? "approved"
+          : "pending"
+      );
+    }
+  }, [review]);
+
+  useEffect(() => {
+    fetchReview();
+  }, []);
+
+  const fetchReview = async () => {
+    try {
+      const response =
+        await api.get(
+          `/reviews/${id}`
+        );
+
+      setReview(
+        response.data.review
+      );
+    } catch (error) {
+      toast.error(
+        "Review not found"
+      );
+
+      navigate("/admin/reviews");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
     return (
-      <div
-        className="
-        bg-white
-        rounded-3xl
-        p-10
-        text-center
-        "
-      >
-        Review Not Found
+      <div className="p-10">
+        Loading...
       </div>
     );
   }
-  const [reviewStatus, setReviewStatus] =useState(review.status);
+
+  if (!review) return null;
+
 
   return (
     <div className="space-y-6">
@@ -132,24 +163,28 @@ const ViewReview = () => {
             </div>
 
             <div className="flex items-center gap-4">
-              <img
-                src={
-                  review.customer.avatar
-                }
-                alt=""
+              <div
                 className="
-                w-16
-                h-16
-                rounded-full
-                object-cover
-                "
-              />
+  w-16
+  h-16
+  rounded-full
+  bg-primary
+  text-white
+  flex
+  items-center
+  justify-center
+  text-xl
+  font-semibold
+  "
+              >
+                {review.customer?.firstName?.charAt(0)}
+              </div>
 
               <div>
                 <h3 className="font-medium">
-                  {
-                    review.customer.name
-                  }
+                  {review.customer?.firstName}
+                  {" "}
+                  {review.customer?.lastName}
                 </h3>
 
                 <p className="text-zinc-500 text-sm">
@@ -184,7 +219,7 @@ const ViewReview = () => {
             <div className="flex gap-4">
               <img
                 src={
-                  review.product.image
+                  review.product?.thumbnail
                 }
                 alt=""
                 className="
@@ -206,7 +241,7 @@ const ViewReview = () => {
                   Product ID:
                   {" "}
                   {
-                    review.product.id
+                    review.product?._id.slice(-8)
                   }
                 </p>
               </div>
@@ -236,7 +271,9 @@ const ViewReview = () => {
                 </p>
 
                 <h3 className="font-medium">
-                  {review.date}
+                  {new Date(
+                    review.createdAt
+                  ).toLocaleDateString()}
                 </h3>
               </div>
             </div>
@@ -332,7 +369,7 @@ const ViewReview = () => {
                 "
               >
                 {
-                  review.review
+                  review.comment
                 }
               </p>
             </div>
@@ -367,17 +404,25 @@ const ViewReview = () => {
               gap-4
               "
             >
-             <button
-  onClick={() => {
-    setReviewStatus(
-      "Approved"
+              <button
+                onClick={async () => {
+  try {
+    await api.patch(
+      `/reviews/${review._id}/approve`
     );
 
+    fetchReview();
+
     toast.success(
-      "Review Approved"
+      "Review Updated"
     );
-  }}
-  className="
+  } catch {
+    toast.error(
+      "Failed"
+    );
+  }
+}}
+                className="
   flex-1
   flex
   items-center
@@ -388,24 +433,34 @@ const ViewReview = () => {
   py-3
   rounded-2xl
   "
->
-  <CheckCircle
-    size={18}
-  />
+              >
+                <CheckCircle
+                  size={18}
+                />
 
-  Approve
-</button>
-<button
-  onClick={() => {
-    setReviewStatus(
-      "Rejected"
+                Approve
+              </button>
+              <button
+               onClick={async () => {
+  try {
+    await api.delete(
+      `/reviews/${review._id}`
     );
 
     toast.success(
-      "Review Rejected"
+      "Review Deleted"
     );
-  }}
-  className="
+
+    navigate(
+      "/admin/reviews"
+    );
+  } catch {
+    toast.error(
+      "Delete Failed"
+    );
+  }
+}}
+                className="
   flex-1
   flex
   items-center
@@ -416,7 +471,7 @@ const ViewReview = () => {
   py-3
   rounded-2xl
   "
->
+              >
 
                 <XCircle
                   size={18}
@@ -425,17 +480,17 @@ const ViewReview = () => {
                 Reject
               </button>
 
-             <button
-  onClick={() => {
-    toast.success(
-      "Review Deleted"
-    );
+              <button
+                onClick={() => {
+                  toast.success(
+                    "Review Deleted"
+                  );
 
-    navigate(
-      "/admin/reviews"
-    );
-  }}
-  className="
+                  navigate(
+                    "/admin/reviews"
+                  );
+                }}
+                className="
   flex-1
   flex
   items-center
@@ -446,7 +501,7 @@ const ViewReview = () => {
   py-3
   rounded-2xl
   "
->
+              >
                 <Trash2
                   size={18}
                 />
