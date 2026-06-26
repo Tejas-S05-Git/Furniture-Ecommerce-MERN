@@ -1,8 +1,5 @@
-import {
-  Eye,
-  Trash2,
-} from "lucide-react";
-
+import React from "react";
+import { Eye, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import DataTable from "../common/DataTable";
@@ -25,6 +22,22 @@ const CustomerTable = ({
     "Actions",
   ];
 
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(amount || 0);
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
   return (
     <DataTable
       columns={columns}
@@ -32,157 +45,83 @@ const CustomerTable = ({
       renderRow={(customer) => (
         <tr
           key={customer._id}
-          className="
-          border-b
-          border-zinc-100
-          hover:bg-zinc-50
-          transition
-          "
+          className="group border-b border-zinc-100 hover:bg-zinc-50/80 transition-colors duration-200"
         >
-          {/* Customer */}
-
-          <td className="px-6 py-4 min-w-[260px]">
-            <div className="flex items-center gap-4">
-             <img
-  src={
-    customer.avatar ||
-    "https://ui-avatars.com/api/?name=" +
-      customer.firstName
-  }
-  alt={customer.firstName}
-/>
-
-              <div>
-                <h3
-                  className="
-                  font-semibold
-                  text-zinc-800
-                  "
-                >
-                  {
-                    `${customer.firstName} ${customer.lastName}`
-                  }
-                </h3>
-
-                <p
-                  className="
-                  text-sm
-                  text-zinc-500
-                  "
-                >
-                  {
-                    customer.email
-                  }
-                </p>
+          {/* Customer Identifiers with Avatar layout */}
+          <td className="px-6 py-4 whitespace-nowrap min-w-[260px]">
+            <div className="flex items-center gap-3">
+              <img
+                src={
+                  customer.avatar ||
+                  `https://ui-avatars.com/api/?name=${customer.firstName}+${customer.lastName}&background=f4f4f5&color=18181b`
+                }
+                alt={`${customer.firstName}'s avatar`}
+                className="w-10 h-10 rounded-full object-cover border border-zinc-200 shrink-0"
+              />
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-zinc-900 capitalize">
+                  {customer.firstName} {customer.lastName}
+                </span>
+                <span className="text-xs text-zinc-500 mt-0.5">
+                  {customer.email}
+                </span>
               </div>
             </div>
           </td>
 
-          {/* Phone */}
-
-          <td className="px-6 py-4">
-            {customer.phone || "N/A"}
-          </td>
-
-          {/* Orders */}
-
-          <td className="px-6 py-4">
-            <span className="font-medium">
-              {
-                customer.totalOrders
-              }
+          {/* Contact Details */}
+          <td className="px-6 py-4 whitespace-nowrap">
+            <span className="text-sm text-zinc-600 font-medium">
+              {customer.phone || "—"}
             </span>
           </td>
 
-          {/* Spent */}
-
-          <td className="px-6 py-4">
-            <span className="font-semibold">
-              ₹
-              {
-                customer.totalSpent
-              }
+          {/* Core Metrics Counts */}
+          <td className="px-6 py-4 whitespace-nowrap">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-800">
+              {customer.totalOrders || 0} Orders
             </span>
           </td>
 
-          {/* Status */}
-
-          <td className="px-6 py-4">
-            <StatusBadge
-              status={
-                customer.isActive
-                  ? "active"
-                  : "inactive"
-              }
-            />
+          {/* Financial Spend Tracker */}
+          <td className="px-6 py-4 whitespace-nowrap">
+            <span className="text-sm font-bold text-zinc-900">
+              {formatCurrency(customer.totalSpent)}
+            </span>
           </td>
 
-          {/* Joined */}
-
-          <td className="px-6 py-4">
-            {
-              new Date(
-                customer.createdAt
-              ).toLocaleDateString()
-            }
+          {/* Customer Profiling System State */}
+          <td className="px-6 py-4 whitespace-nowrap">
+            <StatusBadge status={customer.isActive ? "active" : "inactive"} />
           </td>
 
-          {/* Actions */}
+          {/* Historical Created Timestamp */}
+          <td className="px-6 py-4 whitespace-nowrap">
+            <span className="text-sm text-zinc-500">
+              {formatDate(customer.createdAt)}
+            </span>
+          </td>
 
-          <td className="px-6 py-4">
-            <div
-              className="
-              flex
-              items-center
-              gap-2
-              "
-            >
-              {/* View */}
-
+          {/* Row Context Options Actions */}
+          <td className="px-6 py-4 whitespace-nowrap text-right">
+            <div className="flex items-center gap-2 justify-start md:opacity-50 group-hover:opacity-100 transition-opacity">
               <button
-                title="View Customer"
-                className="
-                p-2
-                rounded-xl
-                hover:bg-primary/10
-                transition
-                "
-                onClick={() =>
-                  navigate(
-                    `/admin/customers/view/${customer._id}`
-                  )
-                }
+                title="View Customer Profile"
+                className="p-2 rounded-lg text-zinc-400 hover:text-primary hover:bg-primary/10 transition-all duration-200"
+                onClick={() => navigate(`/admin/customers/view/${customer._id}`)}
               >
-                <Eye
-                  size={18}
-                  className="text-primary"
-                />
+                <Eye size={18} strokeWidth={2.5} />
               </button>
 
-              {/* Delete */}
-
               <button
-                title="Delete Customer"
-                className="
-                p-2
-                rounded-xl
-                hover:bg-red-100
-                transition
-                "
+                title="Delete Customer Profile"
+                className="p-2 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
                 onClick={() => {
-                  setSelectedCustomer(
-                    customer
-                  );
-
-                  setDeleteModal(
-                    true
-                  );
+                  setSelectedCustomer(customer);
+                  setDeleteModal(true);
                 }}
               >
-                <Trash2
-                  size={18}
-                  className="text-red-500"
-                />
+                <Trash2 size={18} strokeWidth={2.5} />
               </button>
             </div>
           </td>

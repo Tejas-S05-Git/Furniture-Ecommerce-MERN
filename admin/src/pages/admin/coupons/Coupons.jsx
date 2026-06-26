@@ -1,23 +1,20 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import PageHeader from "../../../components/common/PageHeader";
 import EmptyState from "../../../components/common/EmptyState";
 import Pagination from "../../../components/common/Pagination";
 import DeleteModal from "../../../components/common/DeleteModal";
-
 import CouponStats from "../../../components/coupons/CouponStats";
 import CouponFilters from "../../../components/coupons/CouponFilters";
 import CouponTable from "../../../components/coupons/CouponTable";
-
-import couponsData from "../../../data/couponsData";
+import { useEffect, useState } from "react";
+import api from "../../../services/api";
+import toast from "react-hot-toast";
 
 const Coupons = () => {
   const navigate =
     useNavigate();
 
-  const [coupons, setCoupons] =
-    useState(couponsData);
+  const [coupons, setCoupons] = useState([]);
 
   const [search, setSearch] =
     useState("");
@@ -43,16 +40,37 @@ const Coupons = () => {
 
   const itemsPerPage = 5;
 
+  const fetchCoupons = async () => {
+  try {
+    const res = await api.get("/coupons");
+
+    setCoupons(res.data.coupons);
+  } catch (error) {
+    console.log(error);
+    toast.error("Failed to load coupons");
+  }
+};
+
+useEffect(() => {
+  fetchCoupons();
+}, []);
+
   /* Filters */
 
   const filteredCoupons =
     coupons.filter((coupon) => {
       const matchesSearch =
-        coupon.code
-          .toLowerCase()
-          .includes(
-            search.toLowerCase()
-          );
+  coupon.code
+    .toLowerCase()
+    .includes(
+      search.toLowerCase()
+    ) ||
+
+  coupon.description
+    ?.toLowerCase()
+    .includes(
+      search.toLowerCase()
+    );
 
       const matchesStatus =
         !status ||
@@ -188,17 +206,23 @@ const Coupons = () => {
           setDeleteModal(false)
         }
         title="Delete Coupon"
-        onDelete={() => {
-          setCoupons(
-            coupons.filter(
-              (coupon) =>
-                coupon.id !==
-                selectedCoupon.id
-            )
-          );
+        onDelete={async () => {
+  try {
+    await api.delete(`/coupons/${selectedCoupon._id}`);
 
-          setDeleteModal(false);
-        }}
+    toast.success("Coupon deleted");
+
+    setDeleteModal(false);
+
+    fetchCoupons();
+
+  } catch (error) {
+    toast.error(
+      error.response?.data?.message ||
+      "Delete Failed"
+    );
+  }
+}}
       />
 
     </div>

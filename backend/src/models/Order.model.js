@@ -39,39 +39,66 @@ const orderSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      enum: [
-        "cod",
-        "razorpay",
-        "stripe",
-      ],
+      enum: ["cod", "razorpay", "stripe"],
       default: "cod",
     },
 
     paymentStatus: {
       type: String,
-      enum: [
-        "pending",
-        "paid",
-        "failed",
-      ],
+      enum: ["pending", "paid", "failed"],
       default: "pending",
+    },
+
+    paymentId: {
+      type: String,
+      default: "",
+    },
+
+    razorpayOrderId: {
+      type: String,
+      default: "",
+    },
+
+    razorpaySignature: {
+      type: String,
+      default: "",
     },
 
     orderStatus: {
       type: String,
-      enum: [
-        "pending",
-        "processing",
-        "shipped",
-        "delivered",
-        "cancelled",
-      ],
+      enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
       default: "pending",
     },
 
     totalAmount: {
       type: Number,
       required: true,
+    },
+
+    coupon: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Coupon",
+      default: null,
+    },
+
+    discount: {
+      type: Number,
+      default: 0,
+    },
+
+    shipping: {
+      type: Number,
+      default: 0,
+    },
+
+    tax: {
+      type: Number,
+      default: 0,
+    },
+
+    notes: {
+      type: String,
+      default: "",
     },
 
     notes: {
@@ -81,10 +108,7 @@ const orderSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-module.exports = mongoose.model(
-  "Order",
-  orderSchema
-);
+module.exports = mongoose.model("Order", orderSchema);

@@ -33,7 +33,7 @@ const CouponTable = ({
       data={coupons}
       renderRow={(coupon) => (
         <tr
-          key={coupon.id}
+          key={coupon._id}
           className="
           border-b
           border-zinc-100
@@ -88,24 +88,26 @@ const CouponTable = ({
             <div>
               <h3 className="font-medium">
                 {coupon.discountType ===
-                "Percentage"
+                  "Percentage"
                   ? `${coupon.discountValue}%`
                   : `₹${coupon.discountValue}`}
               </h3>
 
-              {coupon.maxDiscount && (
-                <p
-                  className="
+              {coupon.discountType ===
+                "Percentage" &&
+                coupon.maxDiscount > 0 && (
+                  <p
+                    className="
                   text-xs
                   text-zinc-500
                   "
-                >
-                  Max ₹
-                  {
-                    coupon.maxDiscount
-                  }
-                </p>
-              )}
+                  >
+                    Max ₹
+                    {
+                      coupon.maxDiscount
+                    }
+                  </p>
+                )}
             </div>
           </td>
 
@@ -148,11 +150,12 @@ const CouponTable = ({
                   rounded-full
                   "
                   style={{
-                    width: `${
-                      (coupon.usedCount /
-                        coupon.usageLimit) *
-                      100
-                    }%`,
+                    width: `${coupon.usageLimit > 0
+                        ? (coupon.usedCount /
+                          coupon.usageLimit) *
+                        100
+                        : 0
+                      }%`,
                   }}
                 />
               </div>
@@ -162,7 +165,9 @@ const CouponTable = ({
           {/* Expiry */}
 
           <td className="px-6 py-4 whitespace-nowrap">
-            {coupon.expiryDate}
+            {new Date(
+              coupon.expiryDate
+            ).toLocaleDateString()}
           </td>
 
           {/* Status */}
@@ -195,7 +200,7 @@ const CouponTable = ({
                 "
                 onClick={() =>
                   navigate(
-                    `/admin/coupons/edit/${coupon.id}`
+                    `/admin/coupons/edit/${coupon._id}`
                   )
                 }
               >

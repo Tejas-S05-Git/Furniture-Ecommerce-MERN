@@ -1,3 +1,4 @@
+import React from "react";
 import {
   TicketPercent,
   BadgeCheck,
@@ -5,142 +6,101 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-const CouponStats = ({
-  coupons,
-}) => {
-  const totalCoupons =
-    coupons.length;
+const CouponStats = ({ coupons }) => {
+  const totalCoupons = coupons.length;
 
-  const activeCoupons =
-    coupons.filter(
-      (coupon) =>
-        coupon.status ===
-        "Active"
-    ).length;
+  const activeCoupons = coupons.filter(
+    (coupon) =>
+      coupon.status === "Active" &&
+      new Date(coupon.expiryDate) >= new Date()
+  ).length;
 
-  const expiredCoupons =
-    coupons.filter(
-      (coupon) =>
-        coupon.status ===
-        "Expired"
-    ).length;
+  const expiredCoupons = coupons.filter(
+    (coupon) => new Date(coupon.expiryDate) < new Date()
+  ).length;
 
-  const totalUses =
-    coupons.reduce(
-      (total, coupon) =>
-        total +
-        coupon.usedCount,
-      0
-    );
+  const totalUses = coupons.reduce(
+    (total, coupon) => total + (coupon.usedCount || 0),
+    0
+  );
 
+  // Added semantic colors specific to promotional & coupon analytics
   const stats = [
     {
-      title:
-        "Total Coupons",
-      value:
-        totalCoupons,
+      title: "Total Coupons",
+      value: totalCoupons,
       icon: TicketPercent,
+      colors: "bg-blue-50 text-blue-600 border-blue-100",
     },
-
     {
-      title:
-        "Active Coupons",
-      value:
-        activeCoupons,
+      title: "Active Coupons",
+      value: activeCoupons,
       icon: BadgeCheck,
+      colors: "bg-green-50 text-green-600 border-green-100",
     },
-
     {
-      title:
-        "Expired Coupons",
-      value:
-        expiredCoupons,
+      title: "Expired Coupons",
+      value: expiredCoupons,
       icon: Clock3,
+      colors: "bg-rose-50 text-rose-600 border-rose-100", // Rose for expired/inactive promos
     },
-
     {
-      title:
-        "Total Uses",
-      value:
-        totalUses,
+      title: "Total Uses",
+      value: totalUses.toLocaleString("en-IN"), // Clean numerical formatting
       icon: TrendingUp,
+      colors: "bg-purple-50 text-purple-600 border-purple-100", // Purple for growth/usage metrics
     },
   ];
 
   return (
-    <div
-      className="
-      grid
-      grid-cols-1
-      sm:grid-cols-2
-      xl:grid-cols-4
-      gap-6
-      "
-    >
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {stats.map((item) => {
-        const Icon =
-          item.icon;
+        const Icon = item.icon;
 
         return (
           <div
-            key={
-              item.title
-            }
+            key={item.title}
             className="
-            bg-white
-            rounded-3xl
-            border
-            border-zinc-100
-            p-6
-            shadow-sm
-            hover:shadow-md
-            transition-all
-            duration-300
+              group
+              bg-white
+              rounded-2xl
+              border
+              border-zinc-200
+              p-5
+              shadow-sm
+              hover:shadow-md
+              hover:-translate-y-1
+              transition-all
+              duration-300
+              ease-out
             "
           >
             <div className="flex justify-between items-start">
               <div>
-                <p
-                  className="
-                  text-zinc-500
-                  text-sm
-                  "
-                >
-                  {
-                    item.title
-                  }
+                <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-1">
+                  {item.title}
                 </p>
 
-                <h2
-                  className="
-                  text-3xl
-                  font-bold
-                  mt-2
-                  "
-                >
-                  {
-                    item.value
-                  }
+                <h2 className="text-2xl font-bold text-zinc-900 group-hover:text-primary transition-colors duration-300">
+                  {item.value}
                 </h2>
               </div>
 
               <div
-                className="
-                w-14
-                h-14
-                rounded-2xl
-                bg-primary/10
-                flex
-                items-center
-                justify-center
-                "
+                className={`
+                  w-12
+                  h-12
+                  rounded-xl
+                  border
+                  flex
+                  items-center
+                  justify-center
+                  transition-colors
+                  duration-300
+                  ${item.colors}
+                `}
               >
-                <Icon
-                  size={24}
-                  className="
-                  text-primary
-                  "
-                />
+                <Icon size={22} strokeWidth={2.5} />
               </div>
             </div>
           </div>

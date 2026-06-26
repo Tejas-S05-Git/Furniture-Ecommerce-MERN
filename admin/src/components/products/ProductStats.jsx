@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Package,
   CheckCircle,
@@ -5,45 +6,43 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-const ProductStats = ({
-  products,
-}) => {
+const ProductStats = ({ products }) => {
+  // Pre-calculating values for cleaner mapping
+  const totalProducts = products.length;
+  const inStock = products.filter((p) => p.quantity > 0).length;
+  const outOfStock = products.filter((p) => p.quantity === 0).length;
+  const lowStock = products.filter((p) => p.quantity > 0 && p.quantity < 10).length;
+
+  // Added industry-standard semantic colors for inventory status
   const stats = [
     {
       title: "Total Products",
-      value: products.length,
+      value: totalProducts,
       icon: Package,
+      colors: "bg-blue-50 text-blue-600 border-blue-100", // Blue for neutral information
     },
-
     {
       title: "In Stock",
-      value: products.filter(
-        (p) => p.quantity > 0
-      ).length,
+      value: inStock,
       icon: CheckCircle,
+      colors: "bg-green-50 text-green-600 border-green-100", // Green for healthy status
     },
-
     {
       title: "Out Of Stock",
-      value: products.filter(
-        (p) => p.quantity === 0
-      ).length,
+      value: outOfStock,
       icon: XCircle,
+      colors: "bg-rose-50 text-rose-600 border-rose-100", // Rose/Red for critical status
     },
-
     {
       title: "Low Stock",
-      value: products.filter(
-        (p) =>
-          p.quantity > 0 &&
-          p.quantity < 10
-      ).length,
+      value: lowStock,
       icon: AlertTriangle,
+      colors: "bg-orange-50 text-orange-600 border-orange-100", // Orange for warning/attention
     },
   ];
 
   return (
-    <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {stats.map((item) => {
         const Icon = item.icon;
 
@@ -51,38 +50,46 @@ const ProductStats = ({
           <div
             key={item.title}
             className="
-            bg-white
-            rounded-3xl
-            border
-            p-6
-          "
+              group
+              bg-white
+              rounded-2xl
+              border
+              border-zinc-200
+              p-5
+              shadow-sm
+              hover:shadow-md
+              hover:-translate-y-1
+              transition-all
+              duration-300
+              ease-out
+            "
           >
-            <div className="flex justify-between">
+            <div className="flex justify-between items-start">
               <div>
-                <p className="text-zinc-500">
+                <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-1">
                   {item.title}
                 </p>
 
-                <h2 className="text-3xl font-bold mt-2">
+                <h2 className="text-2xl font-bold text-zinc-900 group-hover:text-primary transition-colors duration-300">
                   {item.value}
                 </h2>
               </div>
 
               <div
-                className="
-                w-12
-                h-12
-                rounded-2xl
-                bg-primary/10
-                flex
-                items-center
-                justify-center
-              "
+                className={`
+                  w-12
+                  h-12
+                  rounded-xl
+                  border
+                  flex
+                  items-center
+                  justify-center
+                  transition-colors
+                  duration-300
+                  ${item.colors}
+                `}
               >
-                <Icon
-                  size={22}
-                  className="text-primary"
-                />
+                <Icon size={22} strokeWidth={2.5} />
               </div>
             </div>
           </div>

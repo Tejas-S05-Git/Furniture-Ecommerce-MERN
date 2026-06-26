@@ -1,6 +1,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import api from "../../services/api";
 
 const defaultFormData = {
   code: "",
@@ -31,51 +32,65 @@ const CouponForm = ({
     }));
   };
 
-  const handleSubmit = (e) => {
+ const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.code.trim()) {
-      toast.error(
-        "Coupon code is required"
-      );
-      return;
+        toast.error("Coupon code is required");
+        return;
     }
 
-    if (
-      !formData.discountValue
-    ) {
-      toast.error(
-        "Discount value is required"
-      );
-      return;
+    if (!formData.discountValue) {
+        toast.error("Discount value is required");
+        return;
     }
 
-    if (
-      !formData.expiryDate
-    ) {
-      toast.error(
-        "Expiry date is required"
-      );
-      return;
+    if (!formData.expiryDate) {
+        toast.error("Expiry date is required");
+        return;
     }
 
-    console.log(
-      "Coupon Data:",
-      formData
-    );
+    try {
 
-    toast.success(
-      isEdit
-        ? "Coupon updated successfully"
-        : "Coupon created successfully"
-    );
+        if (isEdit) {
 
-    if (!isEdit) {
-      setFormData(
-        defaultFormData
-      );
+            await api.put(
+                `/coupons/${initialData._id}`,
+                formData
+            );
+
+            toast.success(
+                "Coupon updated successfully"
+            );
+
+        } else {
+
+            await api.post(
+                "/coupons",
+                formData
+            );
+
+            toast.success(
+                "Coupon created successfully"
+            );
+
+            setFormData(defaultFormData);
+
+        }
+
+        navigate("/admin/coupons");
+
+    } catch (error) {
+
+        console.log(error);
+
+        toast.error(
+            error.response?.data?.message ||
+            "Something went wrong"
+        );
+
     }
-  };
+};
 
   return (
     <form

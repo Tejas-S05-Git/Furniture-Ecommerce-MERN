@@ -3,10 +3,73 @@ import HeroPage from "../components/HeroPage";
 import { useCart } from "../context/CartContext";
 import CartItem from "../components/CartItem";
 import OrderSummary from "../components/OrderSummary";
+import { useState } from "react";
+import api from "../services/api";
+import toast from "react-hot-toast";
 
 const Cart = () => {
-  const { cartItems, clearCart , cartSubtotal} = useCart();
+  const { cartItems, clearCart, cartSubtotal } = useCart();
+  const [couponCode, setCouponCode] = useState("");
 
+  const [coupon, setCoupon] = useState(null);
+
+  const [discount, setDiscount] = useState(0);
+
+  const [finalAmount, setFinalAmount] = useState(cartSubtotal);
+
+
+  const handleApplyCoupon =
+    async () => {
+      if (!couponCode.trim()) {
+        toast.error(
+          "Enter coupon code"
+        );
+
+        return;
+      }
+
+      try {
+        const res =
+          await api.post(
+            "/coupons/apply",
+            {
+              code: couponCode,
+              orderAmount:
+                cartSubtotal,
+            }
+          );
+
+        setCoupon(
+          res.data.coupon
+        );
+
+        setDiscount(
+          res.data.discount
+        );
+
+        setFinalAmount(
+          res.data.finalAmount
+        );
+
+        toast.success(
+          "Coupon applied successfully"
+        );
+      } catch (error) {
+        toast.error(
+          error.response?.data
+            ?.message ||
+          "Invalid Coupon"
+        );
+
+        setCoupon(null);
+
+        setDiscount(0);
+
+        setFinalAmount(
+          cartSubtotal
+        );
+      }
+    };
   return (
     <>
       <HeroPage
@@ -51,11 +114,22 @@ const Cart = () => {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <input
                     type="text"
+                    value={couponCode}
+                    onChange={(e) =>
+                      setCouponCode(
+                        e.target.value.toUpperCase()
+                      )
+                    }
                     placeholder="Coupon Code"
                     className="h-14 rounded-full border border-zinc-200 px-6 outline-none"
                   />
 
-                  <button className="bg-primary text-white px-8 h-14 rounded-full font-semibold">
+                  <button
+                    onClick={
+                      handleApplyCoupon
+                    }
+                    className="bg-primary text-white px-8 h-14 rounded-full font-semibold"
+                  >
                     Apply Coupon
                   </button>
                 </div>
@@ -72,10 +146,13 @@ const Cart = () => {
             </div>
 
             {/* RIGHT */}
-           <OrderSummary
-  items={cartItems}
-  subtotal={cartSubtotal}
-/>
+            <OrderSummary
+              items={cartItems}
+              subtotal={cartSubtotal}
+              discount={discount}
+              coupon={coupon}
+              finalAmount={finalAmount}
+            />
 
           </div>
         </div>

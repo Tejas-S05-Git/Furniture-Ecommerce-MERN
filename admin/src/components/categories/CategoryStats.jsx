@@ -1,31 +1,36 @@
+import React from "react";
 import { FolderTree, CheckCircle, XCircle } from "lucide-react";
+
 const CategoryStats = ({ categories }) => {
+  // Logic remains identical, cleanly cached before the map loop
+  const totalCategories = categories.length;
+  const activeCategories = categories.filter((item) => item.status === "active").length;
+  const inactiveCategories = categories.filter((item) => item.status === "inactive").length;
+
+  // Consistent structure with previous stats cards
   const stats = [
     {
       title: "Total Categories",
-      value: categories.length,
+      value: totalCategories,
       icon: FolderTree,
+      colors: "bg-blue-50 text-blue-600 border-blue-100",
     },
-
     {
       title: "Active",
-      value: categories.filter(
-        (item) => item.status === "active"
-      ).length,
+      value: activeCategories,
       icon: CheckCircle,
+      colors: "bg-green-50 text-green-600 border-green-100",
     },
-
     {
       title: "Inactive",
-      value: categories.filter(
-        (item) => item.status === "inactive"
-      ).length,
+      value: inactiveCategories,
       icon: XCircle,
+      colors: "bg-zinc-100 text-zinc-600 border-zinc-200", // Gray tone for inactive/disabled stats
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
       {stats.map((item) => {
         const Icon = item.icon;
 
@@ -33,39 +38,46 @@ const CategoryStats = ({ categories }) => {
           <div
             key={item.title}
             className="
-            bg-white
-            p-6
-            rounded-3xl
-            border
-            border-zinc-100
-          "
+              group
+              bg-white
+              rounded-2xl
+              border
+              border-zinc-200
+              p-5
+              shadow-sm
+              hover:shadow-md
+              hover:-translate-y-1
+              transition-all
+              duration-300
+              ease-out
+            "
           >
-            <div className="flex justify-between">
+            <div className="flex justify-between items-start">
               <div>
-                <p className="text-zinc-500">
+                <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-1">
                   {item.title}
                 </p>
 
-                <h2 className="text-3xl font-bold mt-2">
+                <h2 className="text-2xl font-bold text-zinc-900 group-hover:text-primary transition-colors duration-300">
                   {item.value}
                 </h2>
               </div>
 
               <div
-                className="
-                w-12
-                h-12
-                rounded-2xl
-                bg-primary/10
-                flex
-                items-center
-                justify-center
-              "
+                className={`
+                  w-12
+                  h-12
+                  rounded-xl
+                  border
+                  flex
+                  items-center
+                  justify-center
+                  transition-colors
+                  duration-300
+                  ${item.colors}
+                `}
               >
-                <Icon
-                  className="text-primary"
-                  size={22}
-                />
+                <Icon size={22} strokeWidth={2.5} />
               </div>
             </div>
           </div>

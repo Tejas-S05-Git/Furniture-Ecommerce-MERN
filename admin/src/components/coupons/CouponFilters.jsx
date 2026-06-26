@@ -73,9 +73,7 @@ const CouponFilters = ({
             Inactive
           </option>
 
-          <option value="Expired">
-            Expired
-          </option>
+        
         </select>
 
         {/* Type */}

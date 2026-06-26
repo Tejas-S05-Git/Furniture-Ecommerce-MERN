@@ -14,16 +14,14 @@ const categoryBannerRoutes = require("./routes/categoryBanner.routes");
 const offerBannerRoutes = require("./routes/offerBanner.routes");
 const settingRoutes = require("./routes/setting.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
+const paymentRoutes = require("./routes/payment.routes");
 const app = express();
 
 app.use(express.json());
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:5174",
-    ],
+    origin: ["http://localhost:5173", "http://localhost:5174"],
     credentials: true,
   }),
 );
@@ -42,4 +40,5 @@ app.use("/api/category-banners", categoryBannerRoutes);
 app.use("/api/offer-banners", offerBannerRoutes);
 app.use("/api/settings", settingRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/payment", paymentRoutes);
 module.exports = app;

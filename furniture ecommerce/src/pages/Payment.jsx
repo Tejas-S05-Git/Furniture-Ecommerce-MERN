@@ -4,17 +4,21 @@ import FeaturesSection from "../components/FeaturesSection";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import PaymentMethodCard from "../components/payment/PaymentMethodCard";
+
+import { Truck, CreditCard, } from "lucide-react";
 
 import api from "../services/api";
 
 const Payment = () => {
     const { id } = useParams();
-    const [paymentMethod, setPaymentMethod] = useState("paypal");
+    const [paymentMethod, setPaymentMethod] = useState("cod");
+    const [processing, setProcessing] = useState(false);
     const navigate = useNavigate();
 
-    const [order, setOrder] =useState(null);
+    const [order, setOrder] = useState(null);
 
-    const [loading, setLoading] =useState(true);
+    const [loading, setLoading] = useState(true);
 
 
     const fetchOrder =
@@ -25,7 +29,7 @@ const Payment = () => {
                         `/orders/${id}`
                     );
 
-                    console.log(response.data);
+                console.log(response.data);
 
                 setOrder(
                     response.data.order
@@ -45,42 +49,215 @@ const Payment = () => {
         fetchOrder();
     }, [id]);
 
- const handlePayment =
-  async () => {
-    try {
-      toast.loading(
-        "Processing..."
-      );
+    const handlePayment = async () => {
 
-      toast.dismiss();
+        if (paymentMethod === "cod") {
 
-      toast.success(
-        "Order Placed Successfully"
-      );
+            try {
 
-      navigate(
-        `/order-success/${order._id}`
-      );
+                await api.patch(
+                    `/orders/${order._id}/payment`,
+                    {
 
-    } catch (error) {
-      toast.dismiss();
+                        paymentMethod: "cod",
 
-      toast.error(
-        "Payment Failed"
-      );
+                        paymentStatus: "pending",
+
+                    }
+
+                );
+
+                toast.success(
+                    "Order Placed Successfully"
+                );
+
+                navigate(
+                    `/order-success/${order._id}`
+                );
+
+            } catch (error) {
+
+                toast.error(
+                    "Order Failed"
+                );
+
+            }
+
+            return;
+        }
+
+        if (
+            paymentMethod ===
+            "razorpay"
+        ) {
+
+            openRazorpay();
+
+        }
+
+    };
+
+    const openRazorpay = async () => {
+        try {
+            const res = await api.post(
+                "/payment/create-order",
+                {
+                    orderId: order._id,
+                }
+            );
+
+            const razorpayOrder =
+                res.data.razorpayOrder;
+
+            const options = {
+                key: res.data.key,
+
+                amount:
+                    razorpayOrder.amount,
+
+                currency:
+                    razorpayOrder.currency,
+
+                name: "Furniture Store",
+
+                description:
+                    "Furniture Purchase",
+
+                order_id:
+                    razorpayOrder.id,
+
+                prefill: {
+                    name: order.shippingAddress.fullName,
+
+                    contact: order.shippingAddress.phone,
+
+                    email: order.customer?.email
+                },
+                modal: {
+
+                    ondismiss() {
+
+                        toast.error(
+                            "Payment Cancelled"
+                        );
+
+                    }
+
+                },
+                retry: {
+                    enabled: true
+                },
+
+                theme: {
+                    color: "#204A25",
+                },
+
+                handler: async (response) => {
+
+                    try {
+
+                        await api.post(
+                            "/payment/verify",
+                            {
+
+                                orderId:
+                                    order._id,
+
+                                razorpay_order_id:
+                                    response.razorpay_order_id,
+
+                                razorpay_payment_id:
+                                    response.razorpay_payment_id,
+
+                                razorpay_signature:
+                                    response.razorpay_signature,
+
+                            }
+                        );
+
+                        toast.success(
+                            "Payment Successful"
+                        );
+
+                        navigate(
+                            `/order-success/${order._id}`
+                        );
+
+                    } catch (error) {
+
+                        console.log(error);
+
+                        toast.error(
+                            "Payment Verification Failed"
+                        );
+
+                    }
+
+                }
+            };
+
+            const razorpay =
+                new window.Razorpay(
+                    options
+                );
+
+            razorpay.open();
+
+        } catch (error) {
+
+            console.log(error);
+
+            toast.error(
+                "Unable to start payment"
+            );
+
+        }
+    };
+    useEffect(() => {
+
+        if (
+            !loading &&
+            order &&
+            order.items.length === 0
+        ) {
+
+            navigate("/cart");
+
+        }
+
+    }, [loading, order]);
+
+    if (loading) {
+
+        return (
+
+            <section className="py-40">
+
+                <div className="flex justify-center">
+
+                    <div
+                        className="
+                    w-14
+                    h-14
+                    border-4
+                    border-primary
+                    border-t-transparent
+                    rounded-full
+                    animate-spin
+                    "
+                    />
+
+                </div>
+
+            </section>
+
+        );
+
     }
-  };
-  if (!order?.items?.length) {
-  navigate("/cart");
-}
 
-  if (loading) {
-  return <div>Loading...</div>;
-}
-
-if (!order) {
-  return <div>Order Not Found</div>;
-}
+    if (!order) {
+        return <div>Order Not Found</div>;
+    }
     return (
         <>
             <section className="bg-secondary py-16 lg:py-24 overflow-hidden">
@@ -100,179 +277,87 @@ if (!order) {
 
                             <div className="space-y-4">
 
-                                {/* Paypal */}
-                                <label className="border border-zinc-200 rounded-2xl bg-white px-6 py-5 flex items-center gap-4 cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        checked={paymentMethod === "paypal"}
-                                        onChange={() =>
-                                            setPaymentMethod("paypal")
+                                <div className="space-y-6">
+
+                                    <PaymentMethodCard
+                                        value="cod"
+                                        selected={paymentMethod === "cod"}
+                                        onSelect={setPaymentMethod}
+                                        title="Cash On Delivery"
+                                        description="Pay after your order is delivered. Available for eligible locations only."
+                                        icon={
+                                            <Truck
+                                                size={30}
+                                                className="text-primary"
+                                            />
                                         }
-                                        className="accent-primary"
+                                        badges={[
+                                            "Pay Later",
+                                            "3-5 Days Delivery",
+                                        ]}
                                     />
-                                    <span className="font-medium">
-                                        PayPal
-                                    </span>
-                                </label>
 
-                                {/* Visa */}
-                                <label className="border border-zinc-200 rounded-2xl bg-white px-6 py-5 flex items-center gap-4 cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        checked={paymentMethod === "visa"}
-                                        onChange={() =>
-                                            setPaymentMethod("visa")
+                                    <PaymentMethodCard
+                                        value="razorpay"
+                                        selected={
+                                            paymentMethod ===
+                                            "razorpay"
                                         }
-                                        className="accent-primary"
-                                    />
-                                    <span className="font-medium">
-                                        VISA **** **** **** 8047
-                                    </span>
-                                </label>
-
-                                {/* Google Pay */}
-                                <label className="border border-zinc-200 rounded-2xl bg-white px-6 py-5 flex items-center gap-4 cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        checked={paymentMethod === "gpay"}
-                                        onChange={() =>
-                                            setPaymentMethod("gpay")
+                                        onSelect={setPaymentMethod}
+                                        title="Razorpay"
+                                        description="Pay securely using UPI, Credit Card, Debit Card, Wallet or Net Banking."
+                                        icon={
+                                            <CreditCard
+                                                size={30}
+                                                className="text-primary"
+                                            />
                                         }
-                                        className="accent-primary"
+                                        badges={[
+                                            "UPI",
+                                            "Cards",
+                                            "Wallet",
+                                            "Net Banking",
+                                            "100% Secure",
+                                        ]}
                                     />
-                                    <span className="font-medium">
-                                        Google Pay
-                                    </span>
-                                </label>
 
-                                {/* COD */}
-                                <label className="border border-zinc-200 rounded-2xl bg-white px-6 py-5 flex items-center gap-4 cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        checked={paymentMethod === "cod"}
-                                        onChange={() =>
-                                            setPaymentMethod("cod")
-                                        }
-                                        className="accent-primary"
-                                    />
-                                    <span className="font-medium">
-                                        Cash On Delivery
-                                    </span>
-                                </label>
-
-                                {/* Add Card */}
-                                <div className="border border-zinc-200 rounded-2xl bg-white p-6">
-
-                                    <label className="flex items-center gap-3 mb-6 cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            checked={paymentMethod === "card"}
-                                            onChange={() =>
-                                                setPaymentMethod("card")
-                                            }
-                                            className="accent-primary"
-                                        />
-                                        <span className="font-medium">
-                                            Add New Credit / Debit Card
-                                        </span>
-                                    </label>
-
-                                    {paymentMethod === "card" && (
-                                        <div
-                                            className="space-y-6"
-                                            data-aos="fade-down"
-                                        >
-                                            <div>
-                                                <label className="block mb-3 font-medium">
-                                                    Card Holder Name *
-                                                </label>
-
-                                                <input
-                                                    type="text"
-                                                    placeholder="Ex. John Doe"
-                                                    className="w-full h-14 rounded-full border border-zinc-200 px-6 outline-none focus:border-primary transition"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block mb-3 font-medium">
-                                                    Card Number *
-                                                </label>
-
-                                                <input
-                                                    type="text"
-                                                    placeholder="4716 9627 1635 8047"
-                                                    className="w-full h-14 rounded-full border border-zinc-200 px-6 outline-none focus:border-primary transition"
-                                                />
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-6">
-                                                <div>
-                                                    <label className="block mb-3 font-medium">
-                                                        Expiry Date *
-                                                    </label>
-
-                                                    <input
-                                                        type="text"
-                                                        placeholder="02/30"
-                                                        className="w-full h-14 rounded-full border border-zinc-200 px-6 outline-none focus:border-primary transition"
-                                                    />
-                                                </div>
-
-                                                <div>
-                                                    <label className="block mb-3 font-medium">
-                                                        CVV *
-                                                    </label>
-
-                                                    <input
-                                                        type="text"
-                                                        placeholder="000"
-                                                        className="w-full h-14 rounded-full border border-zinc-200 px-6 outline-none focus:border-primary transition"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <label className="flex items-center gap-3">
-                                                <input
-                                                    type="checkbox"
-                                                    defaultChecked
-                                                    className="accent-primary"
-                                                />
-                                                <span>
-                                                    Save card for future payments
-                                                </span>
-                                            </label>
-
-                                            <button className="bg-primary text-white px-8 h-12 rounded-full hover:opacity-90 transition">
-                                                Add Card
-                                            </button>
-                                        </div>
-                                    )}
                                 </div>
+
+
+
+
                             </div>
                         </div>
 
-                      {/* RIGHT */}
-<div
-  className="lg:col-span-4"
-  data-aos="fade-left"
-  data-aos-delay="200"
->
- 
+                        {/* RIGHT */}
+                        <div
+                            className="lg:col-span-4"
+                            data-aos="fade-left"
+                            data-aos-delay="200"
+                        >
 
-  <OrderSummary
-  items={order?.items || []}
-  subtotal={
-    order?.totalAmount || 0
-  }
-  showButton={false}
-  paymentButton={true}
-  onPaymentClick={
-    handlePayment
-  }
-/>
-</div>
-                       
+
+                            <OrderSummary
+                                items={order.items}
+                                subtotal={
+                                    order.items.reduce(
+                                        (total, item) =>
+                                            total + item.subtotal,
+                                        0
+                                    )
+                                }
+                                discount={order.discount}
+                                coupon={order.coupon}
+                                finalAmount={order.totalAmount}
+                                shipping={order.shipping}
+                                tax={order.tax}
+                                showButton={false}
+                                paymentButton={true}
+                                onPaymentClick={handlePayment}
+                                processing={processing}
+                            />
+                        </div>
+
                     </div>
                 </div>
             </section>

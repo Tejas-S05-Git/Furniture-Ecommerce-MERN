@@ -2,15 +2,29 @@ import React, { useEffect, useState } from "react";
 import OrderSummary from "../components/OrderSummary";
 import FeaturesSection from "./FeaturesSection";
 import HeroPage from "./HeroPage";
-import { useNavigate } from "react-router-dom";
+import {
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import api from "../services/api";
 import { useCart } from "../context/CartContext";
 import toast from "react-hot-toast";
 
+
 const Checkout = () => {
   const navigate = useNavigate();
-  const { cartItems, clearCart, cartSubtotal } =
-    useCart();
+  const location = useLocation();
+  const { cartItems, clearCart, cartSubtotal } =useCart();
+
+  const {
+    coupon = null,
+    discount = 0,
+    shipping = 0,
+    tax = 0,
+    total = cartSubtotal,
+  } = location.state || {};
+  
+  
 
   const [formData, setFormData] =
     useState({
@@ -26,12 +40,12 @@ const Checkout = () => {
       email: "",
     });
 
-    useEffect(() => {
-  if (cartItems.length === 0) {
-    toast.error("Cart is empty");
-    navigate("/cart");
-  }
-}, []);
+  useEffect(() => {
+    if (cartItems.length === 0) {
+      toast.error("Cart is empty");
+      navigate("/cart");
+    }
+  }, []);
 
   const handleChange = (e) => {
     setFormData({
@@ -89,9 +103,16 @@ const Checkout = () => {
                 country:
                   formData.country,
               },
+              coupon: coupon?._id || null,
 
-              paymentMethod:
-                "cod",
+              discount,
+
+              shipping,
+
+              tax,
+
+              totalAmount: total,
+              
 
               notes: "",
             }
@@ -340,6 +361,9 @@ const Checkout = () => {
               <OrderSummary
                 items={cartItems}
                 subtotal={cartSubtotal}
+                discount={discount}
+                coupon={coupon}
+                finalAmount={total}
                 showButton={false}
               />
             </div>
