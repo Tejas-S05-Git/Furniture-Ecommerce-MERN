@@ -1,21 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-
+import api from "../../services/api";
 const GeneralSettings = () => {
-  const [formData, setFormData] =
-    useState({
-      storeName:
-        "Furniture Store",
+  const [formData, setFormData] = useState({
+    storeName: "",
+    storeEmail: "",
+    storePhone: "",
+    storeAddress: "",
+  });
 
-      storeEmail:
-        "admin@furniture.com",
+  const fetchSettings = async () => {
+    try {
+      const res = await api.get("/settings");
 
-      storePhone:
-        "+91 9876543210",
+      setFormData({
+        storeName: res.data.settings.storeName || "",
+        storeEmail: res.data.settings.storeEmail || "",
+        storePhone: res.data.settings.storePhone || "",
+        storeAddress: res.data.settings.storeAddress || "",
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-      storeAddress:
-        "Pune, Maharashtra, India",
-    });
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } =
@@ -27,14 +38,20 @@ const GeneralSettings = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    toast.success(
-      "Settings saved successfully"
-    );
 
-    console.log(formData);
+
+    try {
+      await api.put("/settings", formData);
+
+      toast.success(
+        "Settings saved successfully"
+      );
+    } catch (error) {
+      toast.error("Unable to update settings");
+    }
   };
 
   return (

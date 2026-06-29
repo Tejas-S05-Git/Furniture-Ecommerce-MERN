@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import api from "../../services/api";
 
 const SeoSettings = () => {
   const [formData, setFormData] =
@@ -19,7 +20,49 @@ const SeoSettings = () => {
       googleTagManager:
         "",
     });
+  const [loading, setLoading] =
+    useState(false);
 
+  const fetchSettings = async () => {
+    try {
+
+      const response =
+        await api.get("/settings");
+
+      const settings =
+        response.data.settings;
+
+      setFormData({
+        metaTitle:
+          settings.metaTitle || "",
+
+        metaDescription:
+          settings.metaDescription || "",
+
+        metaKeywords:
+          settings.metaKeywords || "",
+
+        googleAnalytics:
+          settings.googleAnalytics || "",
+
+        googleTagManager:
+          settings.googleTagManager || "",
+      });
+
+    } catch (error) {
+
+      console.log(error);
+
+      toast.error(
+        "Unable to load SEO settings"
+      );
+
+    }
+  };
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
   const handleChange = (e) => {
     const { name, value } =
       e.target;
@@ -30,14 +73,37 @@ const SeoSettings = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
+
     e.preventDefault();
 
-    toast.success(
-      "SEO settings updated successfully"
-    );
+    try {
 
-    console.log(formData);
+      setLoading(true);
+
+      await api.put(
+        "/settings",
+        formData
+      );
+
+      toast.success(
+        "SEO Settings Updated Successfully"
+      );
+
+    } catch (error) {
+
+      console.log(error);
+
+      toast.error(
+        "Unable to update SEO settings"
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
   };
 
   return (
@@ -209,6 +275,7 @@ const SeoSettings = () => {
       <div className="mt-8">
         <button
           type="submit"
+          disabled={loading}
           className="
           bg-primary
           text-white
@@ -219,7 +286,9 @@ const SeoSettings = () => {
           transition
           "
         >
-          Save Changes
+          {loading
+            ? "Saving..."
+            : "Save Changes"}
         </button>
       </div>
     </form>

@@ -96,11 +96,7 @@ export const adminSidebarData = [
         icon: Settings,
         path: "/admin/settings",
       },
-      {
-        name: "Logout",
-        icon: LogOut,
-        path: "/logout",
-      },
+      
     ],
   },
 ];

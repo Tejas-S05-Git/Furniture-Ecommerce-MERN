@@ -27,7 +27,7 @@ const StatCard = ({
                     </p>
 
                     <h2 className="text-3xl font-bold mt-2">
-                        {value.toLocaleString()}
+                        {Number(value || 0).toLocaleString()}
                     </h2>
                 </div>
 

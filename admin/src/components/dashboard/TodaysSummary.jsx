@@ -1,4 +1,6 @@
-const TodaysSummary = () => {
+const TodaysSummary = ({
+  summary,
+}) => {
   return (
     <div className="bg-white rounded-3xl p-6 border border-zinc-100">
       <h2 className="text-xl font-semibold mb-6">
@@ -10,7 +12,7 @@ const TodaysSummary = () => {
           <span>Revenue</span>
 
           <span className="font-semibold">
-            ₹12,500
+            ₹{summary?.revenue?.toLocaleString() || 0}
           </span>
         </div>
 
@@ -18,7 +20,7 @@ const TodaysSummary = () => {
           <span>Orders</span>
 
           <span className="font-semibold">
-            18
+            {summary?.orders || 0}
           </span>
         </div>
 
@@ -26,7 +28,7 @@ const TodaysSummary = () => {
           <span>Customers</span>
 
           <span className="font-semibold">
-            9
+           {summary?.customers || 0}
           </span>
         </div>
       </div>

@@ -11,16 +11,38 @@ import HeroBannerStats from "../../../components/banners/HeroBannerStats";
 import HeroBannerTable from "../../../components/banners/HeroBannerTable";
 
 import heroBannersData from "../../../data/heroBannersData";
+import { useEffect } from "react";
+import api from "../../../services/api";
+import toast from "react-hot-toast";
 
 const HeroBanners = () => {
   const navigate =
     useNavigate();
 
   const [banners, setBanners] =
-    useState(heroBannersData);
+    useState([]);
 
   const [search, setSearch] =
     useState("");
+
+  const fetchBanners = async () => {
+    try {
+
+      const res = await api.get("/hero-banners");
+
+      setBanners(res.data.banners);
+
+    } catch (error) {
+
+      console.log(error);
+
+      toast.error("Failed to load banners");
+
+    }
+  };
+  useEffect(() => {
+    fetchBanners();
+  }, []);
 
   const [deleteModal, setDeleteModal] =
     useState(false);
@@ -45,7 +67,7 @@ const HeroBanners = () => {
   const totalPages =
     Math.ceil(
       filteredBanners.length /
-        itemsPerPage
+      itemsPerPage
     );
 
   const startIndex =
@@ -56,7 +78,7 @@ const HeroBanners = () => {
     filteredBanners.slice(
       startIndex,
       startIndex +
-        itemsPerPage
+      itemsPerPage
     );
 
   return (
@@ -98,7 +120,7 @@ const HeroBanners = () => {
       </div>
 
       {filteredBanners.length ===
-      0 ? (
+        0 ? (
         <EmptyState
           title="No Banners Found"
           description="Try changing your search."
@@ -137,7 +159,7 @@ const HeroBanners = () => {
               -
               {Math.min(
                 startIndex +
-                  itemsPerPage,
+                itemsPerPage,
                 filteredBanners.length
               )}{" "}
               of{" "}
@@ -168,16 +190,31 @@ const HeroBanners = () => {
           setDeleteModal(false)
         }
         title="Delete Banner"
-        onDelete={() => {
-          setBanners(
-            banners.filter(
-              (banner) =>
-                banner.id !==
-                selectedBanner.id
-            )
-          );
+        onDelete={async () => {
 
-          setDeleteModal(false);
+          try {
+
+            await api.delete(
+              `/hero-banners/${selectedBanner._id}`
+            );
+
+            toast.success(
+              "Banner deleted successfully"
+            );
+
+            setDeleteModal(false);
+
+            fetchBanners();
+
+          } catch (error) {
+
+            toast.error(
+              error.response?.data?.message ||
+              "Delete failed"
+            );
+
+          }
+
         }}
       />
     </div>

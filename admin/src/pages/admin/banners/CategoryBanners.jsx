@@ -6,41 +6,53 @@ import Pagination from "../../../components/common/Pagination";
 import EmptyState from "../../../components/common/EmptyState";
 import DeleteModal from "../../../components/common/DeleteModal";
 import SearchInput from "../../../components/common/SearchInput";
-
-
-
-import categoryBannersData from "../../../data/categoryBannersData";
 import CategoryBannerStats from "../../../components/banners/CategoryBannerStats";
 import CategoryBannerTable from "../../../components/banners/CategoryBannerTable";
+import { useEffect } from "react";
+import api from "../../../services/api";
+import toast from "react-hot-toast";
 
 const CategoryBanners = () => {
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
 
-  const [banners, setBanners] =
-    useState(
-      categoryBannersData
-    );
+  const [banners, setBanners] = useState([]);
+  const [search, setSearch] = useState("");
 
-  const [search, setSearch] =
-    useState("");
+  const [deleteModal, setDeleteModal,] = useState(false);
 
-  const [
-    deleteModal,
-    setDeleteModal,
-  ] = useState(false);
+  const [selectedBanner, setSelectedBanner,] = useState(null);
 
-  const [
-    selectedBanner,
-    setSelectedBanner,
-  ] = useState(null);
-
-  const [
-    currentPage,
-    setCurrentPage,
-  ] = useState(1);
+  const [currentPage, setCurrentPage,] = useState(1);
 
   const itemsPerPage = 5;
+
+  const fetchCategoryBanners =
+    async () => {
+      try {
+
+        const response =
+          await api.get(
+            "/category-banners"
+          );
+
+        setBanners(
+          response.data.banners
+        );
+
+      } catch (error) {
+
+        console.log(error);
+
+        toast.error(
+          "Failed to load category banners"
+        );
+
+      }
+    };
+
+  useEffect(() => {
+    fetchCategoryBanners();
+  }, []);
 
   const filteredBanners =
     banners.filter((banner) =>
@@ -54,7 +66,7 @@ const CategoryBanners = () => {
   const totalPages =
     Math.ceil(
       filteredBanners.length /
-        itemsPerPage
+      itemsPerPage
     );
 
   const startIndex =
@@ -65,7 +77,7 @@ const CategoryBanners = () => {
     filteredBanners.slice(
       startIndex,
       startIndex +
-        itemsPerPage
+      itemsPerPage
     );
 
   return (
@@ -107,7 +119,7 @@ const CategoryBanners = () => {
       </div>
 
       {filteredBanners.length ===
-      0 ? (
+        0 ? (
         <EmptyState
           title="No Category Banners Found"
           description="Try changing your search."
@@ -146,7 +158,7 @@ const CategoryBanners = () => {
               -
               {Math.min(
                 startIndex +
-                  itemsPerPage,
+                itemsPerPage,
                 filteredBanners.length
               )}{" "}
               of{" "}
@@ -177,16 +189,33 @@ const CategoryBanners = () => {
           setDeleteModal(false)
         }
         title="Delete Category Banner"
-        onDelete={() => {
-          setBanners(
-            banners.filter(
-              (banner) =>
-                banner.id !==
-                selectedBanner.id
-            )
-          );
+        onDelete={async () => {
 
-          setDeleteModal(false);
+          try {
+
+            await api.delete(
+              `/category-banners/${selectedBanner._id}`
+            );
+
+            toast.success(
+              "Category Banner Deleted"
+            );
+
+            setDeleteModal(false);
+
+            fetchCategoryBanners();
+
+          }
+
+          catch (error) {
+
+            toast.error(
+              error.response?.data?.message ||
+              "Delete Failed"
+            );
+
+          }
+
         }}
       />
     </div>

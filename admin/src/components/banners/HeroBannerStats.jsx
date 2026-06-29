@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Image,
   CheckCircle,
@@ -5,137 +6,101 @@ import {
   Monitor,
 } from "lucide-react";
 
-const HeroBannerStats = ({
-  banners,
-}) => {
-  const totalBanners =
-    banners.length;
+const HeroBannerStats = ({ banners }) => {
+  const totalBanners = banners.length;
 
   const activeBanners =
     banners.filter(
-      (banner) =>
-        banner.status ===
-        "Active"
+      (banner) => banner.active
     ).length;
 
   const inactiveBanners =
     banners.filter(
-      (banner) =>
-        banner.status ===
-        "Inactive"
+      (banner) => !banner.active
     ).length;
 
   const homepageBanners =
-    activeBanners;
+    banners.filter(
+      (banner) => banner.active
+    ).length;
+
 
   const stats = [
     {
-      title:
-        "Total Banners",
-      value:
-        totalBanners,
+      title: "Total Banners",
+      value: totalBanners,
       icon: Image,
+      colors: "bg-blue-50 text-blue-600 border-blue-100",
     },
-
     {
-      title:
-        "Active Banners",
-      value:
-        activeBanners,
+      title: "Active Banners",
+      value: activeBanners,
       icon: CheckCircle,
+      colors: "bg-green-50 text-green-600 border-green-100",
     },
-
     {
-      title:
-        "Inactive Banners",
-      value:
-        inactiveBanners,
+      title: "Inactive Banners",
+      value: inactiveBanners,
       icon: XCircle,
+      colors: "bg-rose-50 text-rose-600 border-rose-100",
     },
-
     {
-      title:
-        "Homepage Banners",
-      value:
-        homepageBanners,
+      title: "Homepage Banners",
+      value: homepageBanners,
       icon: Monitor,
+      colors: "bg-purple-50 text-purple-600 border-purple-100",
     },
   ];
 
   return (
-    <div
-      className="
-      grid
-      grid-cols-1
-      sm:grid-cols-2
-      xl:grid-cols-4
-      gap-6
-      "
-    >
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {stats.map((item) => {
-        const Icon =
-          item.icon;
+        const Icon = item.icon;
 
         return (
           <div
-            key={
-              item.title
-            }
+            key={item.title}
             className="
-            bg-white
-            rounded-3xl
-            border
-            border-zinc-100
-            p-6
-            shadow-sm
-            hover:shadow-md
-            transition-all
-            duration-300
+              group
+              bg-white
+              rounded-2xl
+              border
+              border-zinc-200
+              p-5
+              shadow-sm
+              hover:shadow-md
+              hover:-translate-y-1
+              transition-all
+              duration-300
+              ease-out
             "
           >
             <div className="flex justify-between items-start">
               <div>
-                <p
-                  className="
-                  text-zinc-500
-                  text-sm
-                  "
-                >
-                  {
-                    item.title
-                  }
+                <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-1">
+                  {item.title}
                 </p>
 
-                <h2
-                  className="
-                  text-3xl
-                  font-bold
-                  mt-2
-                  "
-                >
-                  {
-                    item.value
-                  }
+                <h2 className="text-2xl font-bold text-zinc-900 group-hover:text-primary transition-colors duration-300">
+                  {item.value}
                 </h2>
               </div>
 
               <div
-                className="
-                w-14
-                h-14
-                rounded-2xl
-                bg-primary/10
-                flex
-                items-center
-                justify-center
-                "
+                className={`
+                  w-12
+                  h-12
+                  rounded-xl
+                  border
+                  flex
+                  items-center
+                  justify-center
+                  transition-colors
+                  duration-300
+                  ${item.colors}
+                `}
               >
-                <Icon
-                  size={24}
-                  className="
-                  text-primary
-                  "
-                />
+                <Icon size={22} strokeWidth={2.5} />
               </div>
             </div>
           </div>

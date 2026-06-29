@@ -1,7 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import api from "../../services/api";
 
 const SocialSettings = () => {
+
+  const [loading, setLoading] =
+    useState(false);
   const [formData, setFormData] =
     useState({
       facebook: "",
@@ -10,6 +14,47 @@ const SocialSettings = () => {
       pinterest: "",
       youtube: "",
     });
+
+  const fetchSettings = async () => {
+    try {
+
+      const response =
+        await api.get("/settings");
+
+      const settings =
+        response.data.settings;
+
+      setFormData({
+        facebook:
+          settings.facebook || "",
+
+        instagram:
+          settings.instagram || "",
+
+        twitter:
+          settings.twitter || "",
+
+        pinterest:
+          settings.pinterest || "",
+
+        youtube:
+          settings.youtube || "",
+      });
+
+    } catch (error) {
+
+      console.log(error);
+
+      toast.error(
+        "Unable to load settings"
+      );
+
+    }
+  };
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } =
@@ -21,14 +66,37 @@ const SocialSettings = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
+
     e.preventDefault();
 
-    toast.success(
-      "Social links updated successfully"
-    );
+    try {
 
-    console.log(formData);
+      setLoading(true);
+
+      await api.put(
+        "/settings",
+        formData
+      );
+
+      toast.success(
+        "Social Links Updated Successfully"
+      );
+
+    } catch (error) {
+
+      console.log(error);
+
+      toast.error(
+        "Unable to update social links"
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
   };
 
   return (
@@ -204,6 +272,7 @@ const SocialSettings = () => {
       <div className="mt-8">
         <button
           type="submit"
+          disabled={loading}
           className="
           bg-primary
           text-white
@@ -214,7 +283,9 @@ const SocialSettings = () => {
           transition
           "
         >
-          Save Changes
+          {loading
+  ? "Saving..."
+  : "Save Changes"}
         </button>
       </div>
     </form>

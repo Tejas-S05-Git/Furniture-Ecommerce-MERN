@@ -33,7 +33,7 @@ const CategoryBannerTable = ({
       data={banners}
       renderRow={(banner) => (
         <tr
-          key={banner.id}
+          key={banner._id}
           className="
           border-b
           border-zinc-100
@@ -134,7 +134,9 @@ const CategoryBannerTable = ({
             <div>
               <h3 className="font-semibold">
                 ₹
-                {banner.startingPrice.toLocaleString()}
+                {Number(
+                  banner.startingPrice
+                ).toLocaleString()}
               </h3>
 
               <p
@@ -187,7 +189,7 @@ const CategoryBannerTable = ({
                 title="Edit Category Banner"
                 onClick={() =>
                   navigate(
-                    `/admin/category-banners/edit/${banner.id}`
+                    `/admin/category-banners/edit/${banner._id}`
                   )
                 }
                 className="

@@ -1,45 +1,110 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import api from "../../services/api";
 
 const BrandingSettings = () => {
-  const [logoPreview, setLogoPreview] =
-    useState(null);
+  const [logo, setLogo] = useState(null);
 
-  const [
-    faviconPreview,
-    setFaviconPreview,
-  ] = useState(null);
+  const [favicon, setFavicon] = useState(null);
 
-  const handleLogoUpload = (
-    e
-  ) => {
-    const file =
-      e.target.files?.[0];
+  const [logoPreview, setLogoPreview] = useState("");
+
+  const [faviconPreview, setFaviconPreview] = useState("");
+
+  const [loading, setLoading] = useState(false);
+
+  const fetchSettings = async () => {
+    try {
+      const res = await api.get("/settings");
+
+      setLogoPreview(res.data.settings.logo || "");
+
+      setFaviconPreview(
+        res.data.settings.favicon || ""
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
 
     if (!file) return;
+
+    setLogo(file);
 
     setLogoPreview(
       URL.createObjectURL(file)
     );
   };
 
-  const handleFaviconUpload = (
-    e
-  ) => {
-    const file =
-      e.target.files?.[0];
+  const handleFaviconUpload = (e) => {
+    const file = e.target.files[0];
 
     if (!file) return;
+
+    setFavicon(file);
 
     setFaviconPreview(
       URL.createObjectURL(file)
     );
   };
+  const handleSave = async () => {
+    try {
 
-  const handleSave = () => {
-    toast.success(
-      "Branding settings saved successfully"
-    );
+      setLoading(true);
+
+      const formData = new FormData();
+
+      if (logo) {
+        formData.append(
+          "logo",
+          logo
+        );
+      }
+
+      if (favicon) {
+        formData.append(
+          "favicon",
+          favicon
+        );
+      }
+
+      await api.put(
+        "/settings/branding",
+        formData,
+        {
+          headers: {
+            "Content-Type":
+              "multipart/form-data",
+          },
+        }
+      );
+
+      toast.success(
+        "Branding Updated Successfully"
+      );
+
+      fetchSettings();
+
+    } catch (error) {
+
+      console.log(error);
+
+      toast.error(
+        "Unable to update branding"
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
   };
 
   return (
@@ -182,6 +247,7 @@ const BrandingSettings = () => {
       <div className="mt-8">
         <button
           onClick={handleSave}
+          disabled={loading}
           className="
           bg-primary
           text-white
@@ -192,7 +258,9 @@ const BrandingSettings = () => {
           transition
           "
         >
-          Save Changes
+          {loading
+            ? "Saving..."
+            : "Save Changes"}
         </button>
       </div>
     </div>

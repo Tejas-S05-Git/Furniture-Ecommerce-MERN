@@ -421,11 +421,7 @@ const handleNewsletterSubmit = (e) => {
 
             {/* PROMO Banner SECTION */}
             <section className="bg-white py-14 md:py-20 overflow-hidden relative">
-                {/* FLOATING GRADIENTS */}
-
-                {/* <div className="absolute top-0 left-0 w-[300px] h-[300px] bg-primary/10 blur-3xl rounded-full"></div>
-
-      <div className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-accent/20 blur-3xl rounded-full"></div> */}
+                
 
                 <div className="max-w-[1350px] mx-auto px-4 relative z-10">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

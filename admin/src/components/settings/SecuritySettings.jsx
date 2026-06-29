@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import api from "../../services/api";
 
 const SecuritySettings = () => {
   const [formData, setFormData] =
@@ -15,7 +16,38 @@ const SecuritySettings = () => {
 
       twoFactorAuth: false,
     });
+  const [loading, setLoading] =
+    useState(false);
 
+  const fetchSettings = async () => {
+    try {
+
+      const response =
+        await api.get("/settings");
+
+      const settings =
+        response.data.settings;
+
+      setFormData((prev) => ({
+        ...prev,
+
+        adminEmail:
+          settings.adminEmail || "",
+
+        twoFactorAuth:
+          settings.twoFactorAuth || false,
+      }));
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+  };
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
   const handleChange = (e) => {
     const {
       name,
@@ -34,28 +66,87 @@ const SecuritySettings = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
+
     e.preventDefault();
 
     if (
       formData.newPassword &&
       formData.newPassword !==
-        formData.confirmPassword
+      formData.confirmPassword
     ) {
+
       toast.error(
         "Passwords do not match"
       );
 
       return;
+
     }
 
-    toast.success(
-      "Security settings updated successfully"
-    );
+    try {
 
-    console.log(formData);
+      setLoading(true);
+
+      await api.put(
+        "/settings",
+        {
+          adminEmail:
+            formData.adminEmail,
+
+          twoFactorAuth:
+            formData.twoFactorAuth,
+        }
+      );
+
+      if (
+        formData.currentPassword &&
+        formData.newPassword
+      ) {
+
+        await api.put(
+          "/auth/change-password",
+          {
+            currentPassword:
+              formData.currentPassword,
+
+            newPassword:
+              formData.newPassword,
+          }
+        );
+
+      }
+
+      toast.success(
+        "Security Settings Updated Successfully"
+      );
+
+      setFormData((prev) => ({
+        ...prev,
+
+        currentPassword: "",
+
+        newPassword: "",
+
+        confirmPassword: "",
+      }));
+
+    } catch (error) {
+
+      console.log(error);
+
+      toast.error(
+        error.response?.data?.message ||
+        "Unable to update settings"
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
   };
-
   return (
     <form
       onSubmit={handleSubmit}
@@ -293,6 +384,7 @@ const SecuritySettings = () => {
       <div className="mt-8">
         <button
           type="submit"
+          disabled={loading}
           className="
           bg-primary
           text-white
@@ -303,7 +395,9 @@ const SecuritySettings = () => {
           transition
           "
         >
-          Save Changes
+          {loading
+            ? "Saving..."
+            : "Save Changes"}
         </button>
       </div>
     </form>

@@ -6,9 +6,8 @@ import {
   Tooltip,
 } from "recharts";
 
-import { revenueData } from "../../data/dashboardData";
 
-const RevenueChart = () => {
+const RevenueChart = ({ data = [] }) => {
   return (
     <div className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100 h-full">
       <div className="mb-6">
@@ -22,10 +21,20 @@ const RevenueChart = () => {
       </div>
 
       <ResponsiveContainer width="100%" height={320}>
-        <AreaChart data={revenueData}>
-          <XAxis dataKey="month" />
+        <AreaChart data={data}>
+          <XAxis
+            dataKey="month"
+            tickLine={false}
+            axisLine={false}
+          />
 
-          <Tooltip />
+          <Tooltip
+            formatter={(value) =>
+              [
+                `₹${Number(value).toLocaleString("en-IN")}`,
+                "Revenue"
+              ]}
+          />
 
           <Area
             type="monotone"

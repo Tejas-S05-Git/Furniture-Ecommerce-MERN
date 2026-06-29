@@ -1,51 +1,52 @@
 const mongoose = require("mongoose");
 
-const settingSchema =
-  new mongoose.Schema(
-    {
-      storeName: String,
+const settingSchema = new mongoose.Schema(
+  {
+    storeName: String,
 
-      storeEmail: String,
+    storeEmail: String,
 
-      storePhone: String,
+    storePhone: String,
 
-      storeAddress: String,
+    storeAddress: String,
 
-      logo: String,
+    logo: String,
 
-      favicon: String,
+    favicon: String,
 
-      metaTitle: String,
+    metaTitle: String,
 
-      metaDescription: String,
+    metaDescription: String,
 
-      metaKeywords: String,
+    metaKeywords: String,
 
-      googleAnalytics: String,
+    googleAnalytics: String,
 
-      googleTagManager: String,
+    googleTagManager: String,
 
-      facebook: String,
+    facebook: String,
 
-      instagram: String,
+    instagram: String,
 
-      twitter: String,
+    twitter: String,
 
-      pinterest: String,
+    pinterest: String,
 
-      youtube: String,
+    youtube: String,
 
-      twoFactorAuth: {
-        type: Boolean,
-        default: false,
-      },
+    adminEmail: {
+      type: String,
+      default: "",
     },
-    {
-      timestamps: true,
-    }
-  );
 
-module.exports = mongoose.model(
-  "Setting",
-  settingSchema
+    twoFactorAuth: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    timestamps: true,
+  },
 );
+
+module.exports = mongoose.model("Setting", settingSchema);

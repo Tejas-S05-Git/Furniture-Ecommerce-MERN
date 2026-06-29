@@ -1,6 +1,5 @@
-import { topProducts } from "../../data/dashboardData";
 
-const TopProductsTable = () => {
+const TopProductsTable = ({ products = [], }) => {
   return (
     <div className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100 overflow-auto">
 
@@ -26,18 +25,37 @@ const TopProductsTable = () => {
         </thead>
 
         <tbody>
-          {topProducts.map((item) => (
+          {products.map((item) => (
             <tr
-              key={item.name}
+              key={item._id}
               className="border-b"
             >
               <td className="py-4">
-                {item.name}
+                <div className="flex items-center gap-3">
+
+                  <img
+                    src={item.thumbnail}
+                    alt={item.title}
+                    className="w-14 h-14 rounded-xl object-cover"
+                  />
+
+                  <div>
+
+                    <h3 className="font-semibold">
+                      {item.title}
+                    </h3>
+
+                    <p className="text-xs text-zinc-500">
+                      ₹{item.price}
+                    </p>
+
+                  </div>
+
+                </div>
               </td>
+              <td>{item.totalSold}</td>
 
-              <td>{item.sales}</td>
-
-              <td>{item.revenue}</td>
+              <td>₹{item.revenue.toLocaleString()}</td>
             </tr>
           ))}
         </tbody>

@@ -30,23 +30,26 @@ const HeroBannerTable = ({
       columns={columns}
       data={banners}
       renderRow={(banner) => (
-       <tr
-  key={banner.id}
-  className="
+        <tr
+          key={banner._id}
+          className="
   border-b
   border-zinc-100
   hover:bg-zinc-50
   transition-all
   duration-200
   "
->
-  {/* Banner */}
+        >
+          {/* Banner */}
 
-  <td className="px-6 py-5">
-    <img
-      src={banner.image}
-      alt={banner.title}
-      className="
+          <td className="px-6 py-5">
+            <img
+              src={
+                banner.image ||
+                "/images/no-image.png"
+              }
+              alt={banner.title}
+              className="
       w-36
       h-20
       rounded-2xl
@@ -55,41 +58,41 @@ const HeroBannerTable = ({
       border-zinc-200
       shadow-sm
       "
-    />
-  </td>
+            />
+          </td>
 
-  {/* Title */}
+          {/* Title */}
 
-  <td className="px-6 py-5 min-w-[350px]">
-    <div className="space-y-2">
-      <h3
-        className="
+          <td className="px-6 py-5 min-w-[350px]">
+            <div className="space-y-2">
+              <h3
+                className="
         font-semibold
         text-zinc-800
         text-base
         "
-      >
-        {banner.title}
-      </h3>
+              >
+                {banner.title}
+              </h3>
 
-      <p
-        className="
+              <p
+                className="
         text-sm
         text-zinc-500
         leading-6
         max-w-md
         "
-      >
-        {banner.subtitle}
-      </p>
-    </div>
-  </td>
+              >
+                {banner.subtitle}
+              </p>
+            </div>
+          </td>
 
-  {/* Badge */}
+          {/* Badge */}
 
-  <td className="px-6 py-5">
-    <span
-      className="
+          <td className="px-6 py-5">
+            <span
+              className="
       inline-flex
       items-center
       px-4
@@ -101,16 +104,16 @@ const HeroBannerTable = ({
       font-semibold
       whitespace-nowrap
       "
-    >
-      {banner.badgeText}
-    </span>
-  </td>
+            >
+              {banner.badgeText}
+            </span>
+          </td>
 
-  {/* Top Tag */}
+          {/* Top Tag */}
 
-  <td className="px-6 py-5">
-    <span
-      className="
+          <td className="px-6 py-5">
+            <span
+              className="
       inline-flex
       items-center
       px-4
@@ -122,32 +125,36 @@ const HeroBannerTable = ({
       font-medium
       whitespace-nowrap
       "
-    >
-      {banner.topTag}
-    </span>
-  </td>
+            >
+              {banner.topTag}
+            </span>
+          </td>
 
-  {/* Status */}
+          {/* Status */}
 
-  <td className="px-6 py-5">
-    <StatusBadge
-      status={banner.status}
-    />
-  </td>
+          <td className="px-6 py-5">
+            <StatusBadge
+              status={
+                banner.active
+                  ? "Active"
+                  : "Inactive"
+              }
+            />
+          </td>
 
-  {/* Actions */}
+          {/* Actions */}
 
-  <td className="px-6 py-5">
-    <div className="flex items-center gap-3">
+          <td className="px-6 py-5">
+            <div className="flex items-center gap-3">
 
-      <button
-        title="Edit Banner"
-        onClick={() =>
-          navigate(
-            `/admin/banners/edit/${banner.id}`
-          )
-        }
-        className="
+              <button
+                title="Edit Banner"
+                onClick={() =>
+                  navigate(
+                    `/admin/banners/edit/${banner._id}`
+                  )
+                }
+                className="
         w-10
         h-10
         rounded-xl
@@ -158,23 +165,23 @@ const HeroBannerTable = ({
         hover:bg-blue-100
         transition
         "
-      >
-        <Pencil
-          size={18}
-          className="text-blue-600"
-        />
-      </button>
+              >
+                <Pencil
+                  size={18}
+                  className="text-blue-600"
+                />
+              </button>
 
-      <button
-        title="Delete Banner"
-        onClick={() => {
-          setSelectedBanner(
-            banner
-          );
+              <button
+                title="Delete Banner"
+                onClick={() => {
+                  setSelectedBanner(
+                    banner
+                  );
 
-          setDeleteModal(true);
-        }}
-        className="
+                  setDeleteModal(true);
+                }}
+                className="
         w-10
         h-10
         rounded-xl
@@ -185,16 +192,16 @@ const HeroBannerTable = ({
         hover:bg-red-100
         transition
         "
-      >
-        <Trash2
-          size={18}
-          className="text-red-500"
-        />
-      </button>
+              >
+                <Trash2
+                  size={18}
+                  className="text-red-500"
+                />
+              </button>
 
-    </div>
-  </td>
-</tr>
+            </div>
+          </td>
+        </tr>
       )}
     />
   );
